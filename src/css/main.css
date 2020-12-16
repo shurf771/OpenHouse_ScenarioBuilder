@@ -1,0 +1,268 @@
+#imgLogo {
+    height: 100px;
+    float: left;
+    position: absolute;
+}
+
+.pathError {
+    padding: 5px;
+    font-size: small;
+}
+
+.hidden {
+    display: none;
+}
+
+h1 i {
+    color: #646464;
+    font-size: smaller;
+}
+
+/* --------------------------------------- */
+/*       Status card                       */
+/* --------------------------------------- */
+
+#alertsStatus {
+    cursor: pointer;
+}
+#alertsStatus:hover {
+    text-decoration: underline;
+}
+
+#alerts .alert {
+    padding: 0.5em !important;
+}
+
+
+/* --------------------------------------- */
+/*       Contents                          */
+/* --------------------------------------- */
+
+#contentsButton {
+    position: fixed;
+    top: 0;
+    right: 15px;
+    z-index: 9999;
+    background: #f7e895;
+    font-size: 20px;
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    border: 1px solid #000000;
+    text-align: center;
+    line-height: 45px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#contentsButton:hover {
+    background: #f8d615;
+}
+
+#contents {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 9998;
+    background: #c6d7e8;
+    box-shadow: -2px 2px 5px 2px #757575;
+    font-size: 12px;
+    padding: 5px;
+    max-width: 400px;
+    max-height: 75vh;
+    opacity: 0.8;
+    overflow: hidden scroll;
+}
+
+#contents p {
+    cursor: pointer;
+}
+
+#contents p:hover {
+    cursor: pointer;
+    color: #4440ff;
+}
+
+#contents hr {
+    margin: 1em 0;
+}
+
+/* --------------------------------------- */
+/*       settings                          */
+/* --------------------------------------- */
+
+#defaultSettingHeader {
+    cursor: pointer;
+}
+#defaultSettingHeader:hover {
+    text-decoration: underline;
+}
+
+.defaultSetting {
+    font-size: small;
+}
+
+
+/* --------------------------------------- */
+/*       fonts                             */
+/* --------------------------------------- */
+
+.font-small {
+    font-size: small;
+}
+
+
+/* --------------------------------------- */
+/*       compare UI                        */
+/* --------------------------------------- */
+
+#compareJsonsDiv h3 {
+    background: #fff7ce;
+    padding: 5px;
+    text-align: center;
+}
+
+#compareJsonsDiv h3 span {
+    font-size: small;
+    font-family: monospace;
+}
+
+#compareJsonsDiv .panel {
+    padding: 4px;
+}
+
+#compareRoot {
+    font-size: small;
+    color: #272727;
+    padding-left: 60px;
+}
+
+#compareRoot .compHeader {
+    text-align: left;
+    margin-left: -50px;
+    margin-top: 20px;
+    border-bottom: 2px solid  #92b6d3;
+    background: #bef6ff;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+#compareRoot .compHeader:first-child {
+    margin-top: 5px;
+}
+
+#compareRoot i {
+    color: #000000;
+}
+
+#compareRoot .err {
+    color: #ff0000;
+}
+
+#compareRoot .new {
+    color: #1e8d0f;
+}
+
+#compareRoot .warn {
+    color: #e4810f;
+}
+
+#compareRoot p b {
+    background: #ffe86c;
+    padding: 2px 10px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+#compareRoot p b:hover {
+    background: #baff6c;
+}
+
+/* --------------------------------------- */
+/*       other UI                          */
+/* --------------------------------------- */
+
+.cacheTime {
+    background: #f9ff97;
+    font-size: larger;
+    color: #355979;
+    padding: 1px 6px;
+}
+
+.margnied-horizontal {
+    margin: 4px 10px;
+}
+
+.margnied {
+    margin: 6px;
+}
+
+.alert-json-header {
+    margin-top: 0.5em;
+}
+
+.jsonPre {
+    font-size: small;
+    margin: 0;
+}
+
+
+#autoCopyLog {
+    font-size: small;
+    max-height: 40vh;
+}
+
+
+#autoCopyListPaths {
+    font-family: monospace;
+    font-size: small;
+    color: #1dc11d;
+}
+
+#autoCopyListPaths b {
+    color: #779c77;
+    font-weight: normal;
+}
+
+#tdPSDPngMove1, #tdPSDPngMove2, #tdPSDPngMove3 {
+    vertical-align: top;
+}
+
+#tdPSDPngMove1 {
+    color: #002aff;
+}
+#tdPSDPngMove2 {
+    color: #8700ff;
+}
+#tdPSDPngMove3 {
+    color: #ff0074;
+}
+
+.preLog {
+    font-size: 80%;
+    max-height: 40vh;
+    font-family: monospace;
+}
+
+.preLog .err {
+    color: #ff0000;
+}
+
+.preLog .ok {
+    color: #1e8d0f;
+}
+
+.preLog .warn {
+    color: #e4810f;
+}
+
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
