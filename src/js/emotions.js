@@ -84,17 +84,21 @@ class Emotions
         for (let q=0; q<quests.length; q++) {
             let quest = quests[q];
             let rawLocalizationRows = quest.rawLocalizationRows;
-            for (let r=0; r<rawLocalizationRows.length; r++) 
-            {
-                let row = rawLocalizationRows[r];
-                if (row.Description && row.Comment && row.id) {
-                    let id = String(row.id).trim();
-                    mapTextIdToEmotion[id] = {
-                        "id"      : id,
-                        "pers"    : String(row.Comment).trim().toLowerCase(),
-                        "emotion" : String(row.Description).trim()
-                    };
+            if (rawLocalizationRows) {
+                for (let r=0; r<rawLocalizationRows.length; r++) 
+                {
+                    let row = rawLocalizationRows[r];
+                    if (row.Description && row.Comment && row.id) {
+                        let id = String(row.id).trim();
+                        mapTextIdToEmotion[id] = {
+                            "id"      : id,
+                            "pers"    : String(row.Comment).trim().toLowerCase(),
+                            "emotion" : String(row.Description).trim()
+                        };
+                    }
                 }
+            } else {
+                Emotions.log("Пустой  rawLocalizationRows для квеста " + quest.id, "err");
             }
         }
 
