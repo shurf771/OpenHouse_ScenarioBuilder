@@ -131,6 +131,11 @@ class XLSXReader
         for (let index = READ_FROM_LINE; index < jsonLocalization.length; index++) {
             const row = jsonLocalization[index];
 
+            // check if 1st column empty (error)
+            if (row.length > 0 && !row[0] && row[4] && row[5]) {
+                UI.alertError(`Колонка location пустая! Строка ${index+1}, id = ${row[4]}`);
+            }
+
             // row AND 1st column of row are not empty, day location == currentDay
             if (row.length > 0 && (row[0] == state.curDayTitle || row[0] == "initial"))
             {
