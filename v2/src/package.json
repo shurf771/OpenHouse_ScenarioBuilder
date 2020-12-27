@@ -1,0 +1,20 @@
+{
+  "name": "oh_scenario_generator_2",
+  "version": "1.0.0",
+  "description": "OpenHouse Scenario Generator 2",
+  "main": "index.html",
+  "scripts": {
+    "run.win": "nw .",
+    "run.mac": "/Applications/nwjs-sdk-v0.49.2-osx-x64/nwjs.app/Contents/MacOS/nwjs .",
+    "run.mac.release": "/Applications/nwjs.app/Contents/MacOS/nwjs .",
+    "build.win": "nwbuild --platforms win32,win64 --buildDir ./../dist/ ./",
+    "build.mac": "nwbuild --platforms osx64 --buildDir ./../dist/ ./"
+  },
+  "window": {
+    "title": "OpenHouse Scenario Builder 2",
+    "icon": "./img/icon.png",
+    "toolbar": false,
+    "width": 1200,
+    "height": 800
+  }
+}
