@@ -8,6 +8,97 @@ class CodeGenerator
 
 
     // -----------------------------------------------------------------
+    // Удалить из map_objects_visuals_dayXX.json.new визуалы, 
+    // которые дублируют имена в map_objects_animation_visuals_dayXX.json
+    // -----------------------------------------------------------------
+
+    static deleteVisualsNewThatHaveAnimations() 
+    {
+        const fs = Loader.fs;
+        const path = Loader.path;
+
+        let dayNum = Number.parseInt($("#txtDeleteAnimationsFromVisualNew").val().trim());
+        if (!dayNum) {
+            CodeGenerator.questConfigLog("Не указан номер дня!", "err");
+            return;
+        }
+        
+        CodeGenerator._curDay = dayNum;
+        UI.saveLocalStorageText( ["txtDeleteAnimationsFromVisualNew"] );
+        
+
+        DataReader.checkPath(function(basedir) {
+            if (!basedir) {
+                alert("Ошибка. Сначала надо указать путь к папке data клиентского репозитория");
+                return;
+            }
+            CodeGenerator._baseDir = basedir;
+            try {
+                UI.enableButtons(null, ".workButton", false); // disable all buttons
+                CodeGenerator._deleteVisualsNewThatHaveAnimations(
+                    dayNum,
+                    function(callbackData) {
+                        console.log( "_deleteVisualsNewThatHaveAnimations result: ", callbackData );
+                        UI.enableButtons(null, ".workButton", true); // enable all buttons
+                    }
+                );
+            }
+            catch(err) {
+                console.error(err);
+                UI.enableButtons(null, ".workButton", true); // enable all buttons
+            }
+        });
+    }
+
+    static _deleteVisualsNewThatHaveAnimations(dayNum, callback) 
+    {
+        const path = Loader.path;
+        const baseDir = CodeGenerator._baseDir;
+        
+        // /Users/user/dev/rbx3mclient/data/shared/gamedata/tables/map_objects_animation_visuals_day1.json
+        let pathAnims = path.resolve(baseDir, `shared/gamedata/tables/map_objects_animation_visuals_day${dayNum}.json`);
+
+        // /Users/user/dev/rbx3mclient/data/shared/gamedata/tables/map_objects_visuals_day1.json.new
+        let pathVisualNew = path.resolve(baseDir, `shared/gamedata/tables/map_objects_visuals_day${dayNum}.json.new`);
+
+
+        Loader.loadJSON(pathAnims, function(jsonAnims) {
+            console.log("JSON read @ " + pathAnims + " : ", jsonAnims);
+            Loader.loadJSON(pathVisualNew, function(jsonVisuals) {
+                console.log("JSON read @ " + pathVisualNew + " : ", jsonVisuals);
+                
+                let mapAnimNames = {};
+                for (let i=0; i<jsonAnims.length; i++) {
+                    mapAnimNames[jsonAnims[i].name] = jsonAnims[i];
+                } 
+
+                let newVisuals = [];
+                for (let i=0; i<jsonVisuals.length; i++) {
+                    let jsonVisual = jsonVisuals[i];
+                    if (mapAnimNames[jsonVisual.name]) {
+                        console.log("REMOVE " + jsonVisual.name + " from list");
+                    }
+                    else {
+                        newVisuals.push(jsonVisual);
+                    }
+                }
+
+                console.log("Completed! " + newVisuals.length + " visuals of " + jsonVisuals.length + " remain");
+                
+                Loader.saveText(
+                    pathVisualNew,
+                    JSON.stringify(newVisuals, null, 2),
+                    function (p) {
+                        console.log("Saved to " + pathVisualNew + " [OK]");
+                        callback(newVisuals);
+                    }
+                );
+            });
+        });
+    }
+
+
+    // -----------------------------------------------------------------
     // Сгенерировать quest_configs.json
     // -----------------------------------------------------------------
 

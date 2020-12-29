@@ -360,7 +360,7 @@
         <section class="card bonustool" id="bonusToolGenerators">
             <div class="row">
                 <div class="col-12">
-                    <h2>Сгенерировать код/словари</h2>
+                    <h2>Сгенерировать код/словари и прочее</h2>
                     <blockquote>
                         1. Сгенерировать словарь <b>icons_default_positions</b> для <b>data/scripts/cut_scene/icons_settings.lua</b>
                     </blockquote>
@@ -398,8 +398,28 @@
                         </div>
                     </div>
 
+                    <blockquote>
+                        3. Удалить из <b>map_objects_visuals_dayXX.json.new</b> визуалы, 
+                        которые дублируют имена в <b>map_objects_animation_visuals_dayXX.json</b>
+                    </blockquote>
+                    <div class="row">
+                        <div class="col-4 right">
+                            Номер дня: &nbsp;
+                        </div>
+                        <div class="col-4 center">
+                            <input type="text" placeholder="69" class="full-width font-small localStorageText" 
+                                    shu-default="" id="txtDeleteAnimationsFromVisualNew" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 center">
+                            <br />
+                            <button class="bg-pink btn workButton" shu-onclick="btnDeleteAnimationsFromVisualNew_click">Удалить</button>
+                        </div>
+                    </div>
+
                     <!-- <blockquote>
-                        3. Сгенерировать сниппеты для <b>vs_code</b>
+                        4. Сгенерировать сниппеты для <b>vs_code</b>
                     </blockquote>
                     <div class="row">
                         <div class="col-12 center">

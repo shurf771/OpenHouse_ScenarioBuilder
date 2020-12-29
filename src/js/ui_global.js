@@ -200,3 +200,8 @@ function btnGenerateQuestConfigClear_click()
 {
     CodeGenerator.questConfigClear();
 }
+
+function btnDeleteAnimationsFromVisualNew_click()
+{
+    CodeGenerator.deleteVisualsNewThatHaveAnimations();
+}
