@@ -213,7 +213,7 @@ function step2PickDay(dayObj)
     console.log("step2PickDay:", dayObj);
 
     state.curDayId    = parseInt(dayObj.id);
-    state.curDayTitle = dayObj.location;
+    state.curDayTitle = dayObj.location.replace('day', 'D');
 
     step2ClearCurDayJsonCache();
 

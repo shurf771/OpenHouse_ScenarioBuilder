@@ -108,7 +108,7 @@ class XLSXReader
         if (!state.jsons.jsonLocalization) {
             let sheet = state.m3localization.Sheets[state.curDayTitle];
             if (!sheet && state.curDayTitle == "initial") {
-                sheet = state.m3localization.Sheets["day1"];
+                sheet = state.m3localization.Sheets["D1"];
             }
             if (!sheet) {
                 UI.alertError(`can't find sheet '${state.curDayTitle}' in m3:localization`);
@@ -137,7 +137,7 @@ class XLSXReader
             }
 
             // row AND 1st column of row are not empty, day location == currentDay
-            if (row.length > 0 && (row[0] == state.curDayTitle || row[0] == "initial"))
+            if (row.length > 0 && (row[0] == state.curDayTitle || row[0] == "initial" || (row[0] && row[0].replace("day","D") == state.curDayTitle)))
             {
                 // AND other important (2,4,5) columns are not all empty
                 if (row[2] || row[4] || row[5]) 

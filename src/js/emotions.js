@@ -28,7 +28,7 @@ class Emotions
         Emotions._prevDayId    = state.curDayId;
         Emotions._prevDayTitle = state.curDayTitle;
         state.curDayId    = dayNum;
-        state.curDayTitle = "day" + dayNum;
+        state.curDayTitle = "D" + dayNum;
         
         Emotions._curDay = dayNum;
         UI.saveLocalStorageText( ["txtOpenHouseEmotionsDayNum"] );
@@ -51,7 +51,7 @@ class Emotions
 
     static _onSpreadsheetsReady() 
     {
-        let sheet = state.m3localization.Sheets["day" + Emotions._curDay];
+        let sheet = state.m3localization.Sheets["D" + Emotions._curDay];
         let quests = XLSXReader.getQuestsByDay(state, Emotions._curDay);
 
         if (sheet && quests) {
