@@ -1,0 +1,62 @@
+h2, h3, h4 { 
+    font-family: Verdana, Geneva, sans-serif;
+    color: #387CB5; 
+}
+
+h2 {
+    border-bottom: 2px solid #074c83;
+    text-align: center;
+    padding-bottom: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 30px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    background: #d3eafd;
+    border-radius: 20px;
+}
+
+.emoji {
+    font-weight: 400;
+    font-family: apple color emoji,segoe ui emoji,notocoloremoji,android emoji,emojisymbols,emojione mozilla,segoe ui symbol;
+}
+
+#divroot {
+    width: 90%;
+    margin: auto;
+}
+
+
+.btnPlusBlockToggleShow {
+    text-decoration: none;
+    font-family: monospace;
+    color: #999;
+    font-weight: bold;
+}
+.btnPlusBlockToggleShow:hover {
+    color: #555;
+}
+
+
+.option { 
+    cursor: pointer;
+}
+.option:hover { color: #1D67A4; }
+.optionActive { color: #1D97A4; font-weight: bold; }
+
+.optionCurrent { display: none; color: #5A5; }
+.optionActive .optionCurrent  { display: inline; }
+
+
+.txtAreaInOut  {
+  font-family: monospace;
+  width:100%;
+  height:300px;
+  font-size: 0.85em;
+}
+
+#txtOutput {
+  background-color: #dbefdc;
+  height:500px;
+}

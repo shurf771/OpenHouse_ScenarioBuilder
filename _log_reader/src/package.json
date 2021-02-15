@@ -1,0 +1,20 @@
+{
+  "name": "oh_scenario_helper",
+  "version": "1.0.0",
+  "description": "OH scenario helper",
+  "main": "OpenHouseScenarioHelper.htm",
+  "scripts": {
+    "run.win": "nw .",
+    "run.mac": "/Applications/nwjs-sdk-v0.49.2-osx-x64/nwjs.app/Contents/MacOS/nwjs .",
+    "run.mac.release": "/Applications/nwjs.app/Contents/MacOS/nwjs .",
+    "build.win": "nwbuild --platforms win32,win64 --buildDir ./../../dist/ ./",
+    "build.mac": "nwbuild --platforms osx64 --buildDir ./../../dist/ ./"
+  },
+  "window": {
+    "title": "OH scenario helper",
+    "icon": "./img/icon.png",
+    "toolbar": false,
+    "width": 1400,
+    "height": 800
+  }
+}

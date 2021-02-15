@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OH scenario helper</title>
+
+  <link rel="stylesheet" href="css/papier-1.3.0.min.css">
+  <link rel="stylesheet" href="css/ifuckingknowcss.css">
+  <script src="lib/vend/jquery-3.3.1.min.js"></script>
+
+  <style>
+    html {
+        font-family: Helvetica, Arial, sans-serif;
+        background: #F1F2F3;
+    }
+    input, textarea {
+        font-size: 11px !important;
+    }
+    h4 {
+        cursor: pointer;
+    }
+    h4 b {
+        color: #7cacd3;
+    }
+    h4, h3 {
+        margin-top: 30px;
+    }
+    .tdWas pre, .tdBecame pre {
+        text-align: left;
+    }
+
+    #divOutput {
+      background-color: #dbefdc;
+      min-height:300px;
+      padding: 10px;
+    }
+
+    #txtClipboard {
+      background-color: #f3efe1;
+      font-family: monospace;
+      width: 100%;
+      font-size: 0.85em;
+      border: 1px solid #a29e98;
+      padding: 10px;
+      white-space: pre;
+    }
+
+    .outputItem1 {
+      display: inline-block;
+      /*margin: 20px;*/
+      background: #efffe6;
+      border: 1px solid #4e905c;
+      cursor: pointer;
+      width: 50%;
+    }
+    .outputItem1:hover {
+      background: #f1f7ee;
+    }
+
+    .outputItem2 {
+      display: inline-block;
+      /*margin: 20px;*/
+      background: #d1ffea;
+      border: 1px solid #4e7d90;
+      cursor: pointer;
+      width: 45%;
+    }
+    .outputItem2:hover {
+      background: #f1f7ee;
+    }
+
+    .blinking {
+      background: #80eef9 !important;
+    }
+
+    .error {
+      background: #ffd1d1 !important;
+    }
+
+    #cmdCopyAll {
+      cursor: pointer;
+    }
+
+    #divOutput,#txtClipboard,.outputItem {
+      font-size: 12px;
+    }
+
+  </style>
+
+
+  <script>
+  
+    var fs = require('fs');
+
+    var COOLDOWN_REGEN_MS     = 500;
+    var lastKeyActivity       = 0;
+    var strAllLines           = "";
+    var isRegeneratingPlaned  = false;
+
+    
+    $(document).ready(function(){
+        onReady();
+        checkAutoLoadFile();
+    });
+
+    // global keys
+    $(document).keydown(function(e) {
+        if (e.key == "F5") {
+          location.reload();
+        }
+    });
+
+    $(window).on('focus', function(){
+        console.log('document activate, isRegeneratingPlaned = ' + isRegeneratingPlaned);
+        if (!isRegeneratingPlaned)
+        {
+          // read current log
+          checkAutoLoadFile();
+        }
+    });
+    
+    function checkAutoLoadFile(){
+        // nwjs can read directly from FS!
+        if (true)
+        {
+          var path = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
+          let str = null;
+          try {
+              let buf = fs.readFileSync(path);
+              str = buf.toString();
+              isRegeneratingPlaned = true;
+              viewReGenerateIsPlaned(true);
+              $("#txtInput").val(str);
+              setTimeout(txtInput_change, 10);
+          } 
+          catch (err) {
+              console.log("loadText ERROR reading file: ", err);
+          }
+        }
+        else 
+        {
+          // read current log
+          // /Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt
+          $.ajax({
+              //url: "file:///Users/user/Library/Application%20Support/com.integragames.openhouse.osx/curr_log.txt",
+              url: "http://openhouse.com/cur_log.txt",
+              dataType: 'text',
+              async: false,
+              success: function(data) {
+                  // console.log(data);
+                  isRegeneratingPlaned = true;
+                  viewReGenerateIsPlaned(true);
+                  $("#txtInput").val(data);
+                  setTimeout(txtInput_change, 10);
+              }
+          });
+        }
+    }
+    
+    function onReady() 
+    {
+      $("h4").click(function(e){
+        let selectorToToggle = $(e.currentTarget).attr("shu-toggle");
+        if (selectorToToggle) {
+          $(selectorToToggle).toggle();
+        }
+      });
+
+      $("#txtInput").keydown(txtInput_changing);
+      $("#txtInput").change(txtInput_change);
+
+      $("#cmdCopyAll").click(cmdCopyAll_click);
+
+      setInterval(cooldownInterval, COOLDOWN_REGEN_MS/2);
+    }
+
+
+    function viewReGenerateIsPlaned(yesItsPlaned) {
+        yesItsPlaned ? 
+          $("html").css("background", "#efebe1") :
+          $("html").css("background", "#F1F2F3") ;
+    }
+    
+    function inputDataIsChanged(noItIsNotChanged) {
+        lastKeyActivity = (noItIsNotChanged ? Number.MAX_VALUE : Date.now());
+    }
+
+    function cooldownInterval() {
+        if (lastKeyActivity > 0 && Date.now() - lastKeyActivity >= COOLDOWN_REGEN_MS) {
+            txtInput_change();
+        }
+    }
+    
+    function txtInput_change() {
+      isRegeneratingPlaned = true;
+      runParse();
+    }
+    
+    function txtInput_changing() {
+      inputDataIsChanged();
+      viewReGenerateIsPlaned(true);
+      isRegeneratingPlaned = true;
+    }
+
+
+    var RESULTS = {};
+    var RESULTS_ARR = [];
+
+    var CFG = {
+      "move_camera_fast": {
+        order: 20,
+        key: "move_camera_fast",
+        prePattern: "CAMERA POSITION",
+        pattern: /^.*I:\[lua\] CAMERA POSITION: ([-\.\d]+) , ([-\.\d]+).*$/,
+        replace: [ '{ "action": "move_camera_fast", "position": {"x":$1, "y":$2}, "time": 1 }' ]
+      },
+      "zoom_camera": {
+        order: 10,
+        key: "zoom_camera",
+        prePattern: "ZOOM:",
+        pattern: /^.*D:\[lua\] ZOOM: ([-\.\d]+)$/,
+        replace: [ '{ "action": "zoom_camera", "zoom": $1, "time": 1, "transition": "easeout"}' ],
+        func_postprocess: "zoom_round_value"
+      },
+      "set_position": {
+        order: 30,
+        key: "set_position_$1",
+        prePattern: "POSITION of",
+        pattern: /^.*D:\[lua\] POSITION of (\w+):\s+([-\.\d]+) ; ([-\.\d]+).*$/,
+        replace: [ 
+          '{ "action": "set_position", "personage": "$1", "position": {"x":$2, "y":$3} }',
+          '{ "action": "walk", "personage": "$1", "to": {"x":$2, "y":$3} }'
+        ]
+      },
+      "look": {
+        order: 40,
+        key: "look_$1",
+        prePattern: "[lua] LOOK",
+        pattern: /^.*D:\[lua\] LOOK (\w+) at (\w+)$/,
+        replace: [ 
+          '{ "action": "look", "personage": "$1", "at": "$2", "animate": false }'
+        ]
+      },
+      "map_object:on_click": {
+        order: 50,
+        key: "map_object:on_click",
+        prePattern: "map_object:on_click",
+        pattern: /^.*I:\[lua\] map_object:on_click\s(\w+)$/,
+        replace: [ '', '$1' ]
+      },
+      "iso:change": {
+        order: 60,
+        key: "iso:change",
+        prePattern: "ISO CHANGE",
+        pattern: /^.*D:\[lua\] ISO CHANGE\s*"([^"]+)"\s*"coord":\s{"w":\s([-.\d]+),\s?"h":\s([-.\d]+),\s?"x":\s([-.\d]+),\s?"y":\s([-.\d]+)}$/,
+        replace: [ 
+          '$1',
+          '{"w": $2, "l": $3, "x": $4, "y": $5}'
+        ]
+      },
+      "iso:change:view": {
+        order: 70,
+        key: "iso:change:view",
+        lines: 3,
+        prePattern: "view:",
+        pattern: /^view:\s(\w+)\s?\n\s"x":\s?([-.\d]+),\n\s?"y":\s?([-.\d]+)$/m,
+        replace: [ 
+          '$1', 
+          '"x": $2,\n"y": $3' 
+        ]
+      },
+      "error:walk": {
+        order: 100,
+        extraClass: "error",
+        key: "error:walk:$1:$2:$3",
+        prePattern: "Error in walknig path, personage",
+        pattern: /^.*Error in walknig path, personage:\s(\w+),\sx:([\d-\.]+),\sy:([\d-\.]+)$/,
+        replace: [ 
+          'ERROR in "walk" for $1', 
+          '"x":$2, "y":$3' 
+        ]
+      }
+    };
+
+    function zoom_round_value(line) {
+      let pattern = /"zoom": ([-\.\d]+)/;
+      if (pattern.test(line)) {
+        var arrMatch = line.match(pattern);
+        var strZoom = arrMatch[1];
+        var roundZoom = Math.round(Number.parseFloat(strZoom) * 100) / 100;
+        line = line.replace(strZoom, roundZoom+"");
+      }
+      return line;
+    }
+    
+
+    function runParse() 
+    {
+      console.log("parsing...");
+
+      RESULTS_ARR = [];
+      RESULTS = {};
+
+      var raw       = $("#txtInput").val();
+      var lines     = raw.split("\n");
+      var results   = {};
+      var results2  = {};
+
+
+      for (var i=0; i<lines.length; i++)
+      {
+        var _line = lines[i];
+
+        for (var actionName in CFG) 
+        {
+          var pattern     = CFG[actionName].pattern;
+          var prePattern  = CFG[actionName].prePattern;
+          var replaces    = CFG[actionName].replace;
+          var replace     = replaces[0];
+          var key         = CFG[actionName].key;
+          var nlines      = CFG[actionName].lines;
+          var line        = _line;
+
+          if (nlines && nlines > 1) {
+            for (let l=0; l<nlines-1; l++) {
+              line += "\n" + lines[i+1+l];
+            }
+          }
+
+          if (!prePattern || line.indexOf(prePattern) !== -1)
+          {
+            if (pattern.test(line)) 
+            {
+              key = line.replace(pattern, key);
+              var resultLine = line.replace(pattern, replace);
+              if (CFG[actionName].func_postprocess) {
+                var func_postprocess_name = CFG[actionName].func_postprocess;
+                resultLine = (window || this)[func_postprocess_name](resultLine);
+              }
+              results[key] = resultLine; // depricated
+
+              if (RESULTS[key]) {
+                RESULTS[key]["text_1"] = resultLine;
+              } 
+              else {
+                RESULTS[key] = {
+                  "i"          : i,
+                  "order"      : CFG[actionName].order,
+                  "extraClass" : CFG[actionName].extraClass,
+                  "text_1"     : resultLine,
+                  "text_2"     : null
+                }
+                RESULTS_ARR.push( RESULTS[key] );
+              }
+
+              // alternative replace
+              if (replaces[1]) {
+                replace = replaces[1];
+                resultLine = line.replace(pattern, replace);
+                if (CFG[actionName].func_postprocess) {
+                  var func_postprocess_name = CFG[actionName].func_postprocess;
+                  resultLine = (window || this)[func_postprocess_name](resultLine);
+                }
+                results2[key] = resultLine; // depricated
+
+                RESULTS[key]["text_2"] = resultLine;
+              }
+            }
+          }
+        }
+      }
+
+      //console.log(results, results2);
+      //console.log(RESULTS, RESULTS_ARR);
+
+      RESULTS_ARR.sort((a,b) => {
+        return a.order - b.order;
+      });
+
+      redrawResults();
+      
+      inputDataIsChanged(true);
+      viewReGenerateIsPlaned(false);
+      isRegeneratingPlaned = false;
+    }
+
+
+    function redrawResults() 
+    {
+      $("#divOutput").empty();
+
+      var strResults = [];
+      var domItems  = [];
+      
+      for (var i=0; i<RESULTS_ARR.length; i++)
+      {
+        var strResult  = RESULTS_ARR[i]["text_1"];
+        var strResult2 = RESULTS_ARR[i]["text_2"];
+        var extraClass = RESULTS_ARR[i]["extraClass"];
+
+        strResults.push(strResult);
+        domItems.push( addOutputItem(strResult, 1, extraClass) );
+        // alternative
+        if (strResult2) {
+          domItems.push( addOutputItem(strResult2, 2, extraClass) );
+        }
+      }
+
+      strAllLines = strResults.join(",\n");
+
+      $("#divOutput").append(domItems);
+
+      $(".outputItem").click(function(e) {
+         var text = $(e.currentTarget).text();
+         copyTextToClipboard(text);
+         blink($(e.currentTarget));
+      });
+    }
+
+    function blink(target) {
+      target.addClass("blinking");
+      setTimeout(function() { 
+        target.removeClass("blinking");
+      }, 200);
+    }
+
+    
+    function cmdCopyAll_click(e) {
+      copyTextToClipboard(strAllLines);
+    }
+
+
+    function addOutputItem(str, indx, extraClass) 
+    {
+      var item = $("<pre class='outputItem outputItem" + indx + "'></pre>");
+      if (extraClass) {
+        item.addClass(extraClass);
+      }
+      item.text(str);
+      return item;
+    }
+
+
+    function copyTextToClipboard(text) 
+    {
+      $("#txtClipboard").text("");
+
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      $("#txtClipboard").text(text);
+
+    }
+
+
+    function regexGetAllMatchWithGroups(pattern, string) {
+      var resultArray = [];
+      var m = null;
+      while ((m = pattern.exec(string)) !== null) {
+        if (m.index === pattern.lastIndex) {
+          pattern.lastIndex++;
+        }
+        resultArray.push(m);
+      }
+      return resultArray;
+    }
+
+
+
+    function __spacesGen(num) { var spaces = ""; while (spaces.length < num) spaces += " "; return spaces; }
+    function __int(str)       { var num = parseInt(str); return (isNaN(num) ? 0 : num); }
+    function __float(str)     { var num = parseFloat(str.replace(",",".")); return (isNaN(num) ? 0 : num); }
+
+    function __str(str) { 
+      if (str === null || str === 'NULL') return ''; 
+      return str;
+    }
+
+    function __json(str) { 
+      try {
+        var json1 = JSON.parse(str);
+        return json1;
+      }
+      catch(e) { }
+      return null;
+    }
+    
+    function __isJSON(str) {  
+      if (!str || str.length==0) return false;
+      var char0 = str.charAt(0);
+      if (char0 != "{" && char0 != "[") return false;
+      var char1 = str.charAt(str.length-1);
+      if (char1 != "}" && char1 != "]") return false;
+      return true;
+    }
+
+    function __isJSONsEqual(strJson1, strJson2) {  
+      try {
+        var json1 = JSON.parse(strJson1);
+        var json2 = JSON.parse(strJson2);
+        return _.isEqual(json1, json2);
+      }
+      catch(e) {
+        return false;
+      }
+      return false;
+    }
+
+    function __isEqual(a, b) {
+      if (a==b || (a=='' && b=='NULL') || (a=='NULL' && b=='')) {
+        return true;
+      }
+      return false;
+    }
+
+    function __empty(value) {
+        if (!value || value=="0" || value=="-" || value=="#REF!" || value=="#ССЫЛ!")
+            return true;
+        return false;
+    }
+  
+  
+  </script>
+  
+</head>
+
+<body>
+    <h2>
+        OH scenario helper
+    </h2>
+
+    
+    <div id="divroot">
+    
+        <!-----------------  RESULT json code  ----------------->
+        <h3 class="alrt_green" style="margin-left:-20px"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small></h3>
+        <div style="margin-top:5px;"  class="txtAreaInOut" id="divOutput"></div>
+
+        <!-----------------  clipboard  ----------------->
+        <h4 style="margin-left:-20px"><span class="emoji">&#x2198;</span> Clipboard <small id="cmdCopyAll">(copy all)</small></h4>
+        <div id="txtClipboard"></div>
+
+        <!-----------------  input 1 :  google doc  ----------------->
+        <h4 shu-toggle="#txtInput" style="margin-left:-20px"><span class="emoji">&#x2198;</span> Input <small>:: CopyPaste from Debug Console (click me to expand)</small></h4>
+        <textarea class="txtAreaInOut" id="txtInput" style="display: none;"></textarea>
+        
+    </div>
+    
+
+    <br />
+
+</body>
+
+</html>
