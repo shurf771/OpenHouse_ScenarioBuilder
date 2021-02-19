@@ -205,3 +205,21 @@ function btnDeleteAnimationsFromVisualNew_click()
 {
     CodeGenerator.deleteVisualsNewThatHaveAnimations();
 }
+
+// --- bonus 6 ---
+
+
+function btnGenerateSnippetsGenerate_click()
+{
+    CodeGenerator.snippetsGenerate();
+}
+
+function btnenerateSnippetsCopy_click()
+{
+    CodeGenerator.snippetsCopy();
+}
+
+function btnGenerateSnippetsClear_click()
+{
+    CodeGenerator.snippetsClear();
+}

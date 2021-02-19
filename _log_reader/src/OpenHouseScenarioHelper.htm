@@ -92,6 +92,8 @@
   
     var fs = require('fs');
 
+    const LOG_PATH        = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
+
     var COOLDOWN_REGEN_MS     = 500;
     var lastKeyActivity       = 0;
     var strAllLines           = "";
@@ -101,6 +103,7 @@
     $(document).ready(function(){
         onReady();
         checkAutoLoadFile();
+        watch();
     });
 
     // global keys
@@ -118,12 +121,22 @@
           checkAutoLoadFile();
         }
     });
+
+    function watch() {
+      var watchPath = LOG_PATH;
+
+      console.log('start watching, watchPath = ' + watchPath);
+      fs.watch(watchPath, (eventType, filename) => {
+        console.log(eventType, filename);
+        checkAutoLoadFile();
+      });
+    }
     
     function checkAutoLoadFile(){
         // nwjs can read directly from FS!
         if (true)
         {
-          var path = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
+          var path = LOG_PATH;
           let str = null;
           try {
               let buf = fs.readFileSync(path);

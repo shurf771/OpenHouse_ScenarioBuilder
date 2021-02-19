@@ -4,7 +4,253 @@ class CodeGenerator
     static path = require('path');
 
     static _baseDir = null;
-   
+    static _isIdle = {};
+
+
+    // -----------------------------------------------------------------
+    // Сгенерировать snippets
+    // -----------------------------------------------------------------
+
+    static snippetsGenerate() 
+    {
+        CodeGenerator._isIdle = {
+            'idle': true,
+            'CombatPose_cycle': true,
+            'computer_work_cycle': true,
+            'IDLE_bag': true,
+            'idle_bench': true,
+            'Sweeps_cycle': true,
+            'take_hands': true,
+            'Walk_cycle_bag': true,
+            'Sit_Talk': true,
+            'Sit_Listen': true,
+            'sleep_idle': true,
+            'idle02': true,
+            'table_soccer_idle': true,
+            'sit_on_sand_idle': true,
+            'watering_plants_idle': true,
+            'drums_idle': true,
+            'idle03': true,
+            'talk': true,
+            'tap_sit': true,
+            'tap_stand': true,
+            'tap_walk': true,
+            'read_idle': true,
+            'sit_talk': true,
+            'sit_listen': true,
+            'idle_bench': true,
+            'take_hands': true,
+            'idle_bag_in_hand': true,
+            'sitting_floor_idle': true,
+            'painting_floor_idle': true,
+            'table_socker_idle': true,
+            'guitar_idle': true,
+            'sit_idle': true,
+            'play_stand_idle': true,
+            'chainsaw_idle': true,
+            'lotus_idle_ad': true,
+            'Sit_Listen': true,
+            'Sit_Talk': true,
+            'idle_bench': true,
+            'sitting_floor_idle': true,
+            'ukulele_sit': true,
+            'ukulele_stand': true,
+
+            'jump_idle': true,
+            'rolling_idle': true,
+            'sleep_idle': true,
+            'sit_idle': true,
+            'stand_idle': true,
+            'play_idle': true
+        };
+
+        const fs = Loader.fs;
+        const path = Loader.path;
+
+        CodeGenerator.questConfigClear();
+
+        let strPersonages = $("#txtGenerateSnippetsPersonagesList").val().trim().replace(/\s/g,"");
+        if (!strPersonages) {
+            CodeGenerator.snippetsLog("Не указаны персонажи", "err");
+            return;
+        }
+        
+        UI.saveLocalStorageText( ["txtGenerateSnippetsPersonagesList"] );
+
+        DataReader.checkPath(function(basedir) {
+            if (!basedir) {
+                alert("Ошибка. Сначала надо указать путь к папке data клиентского репозитория");
+                return;
+            }
+            CodeGenerator._baseDir = basedir;
+            try {
+                UI.enableButtons(null, ".workButton", false); // diable all buttons
+                
+                // /Users/user/dev/rbx3mclient/data/shared/gamedata/tables/map_personages.json
+                let pathPersonages = path.resolve(basedir, `shared/gamedata/tables/map_personages.json`);
+                // /Users/user/dev/rbx3mclient/data/shared/gamedata/tables/map_animals.json
+                let pathAnimals = path.resolve(basedir, `shared/gamedata/tables/map_animals.json`);
+
+                Loader.loadJSON(pathPersonages, function(jsonPers) {
+                    console.log("JSON read @ " + pathPersonages + " : ", jsonPers);
+                    Loader.loadJSON(pathAnimals, function(jsonAnimals) {
+                        console.log("JSON read @ " + pathAnimals + " : ", jsonAnimals);
+                        CodeGenerator._snippetsGenerate(
+                            { strPersonages: strPersonages },
+                            [ jsonPers, jsonAnimals ]
+                        );
+
+                        UI.enableButtons(null, ".workButton", true); // enable all buttons
+
+                        let domLog = $("#snippetsGenerateResult");
+                        hljs.highlightBlock(domLog[0]);
+                    });
+                });
+            }
+            catch(err) {
+                console.error(err);
+                UI.enableButtons(null, ".workButton", true); // enable all buttons
+            }
+        });
+    }
+
+
+    static _snippetsGenerate(cfg, jsons)
+    {
+        let jsonResult = {};
+        let mapCache = {};
+
+        let arrPersonageNames = cfg.strPersonages.split(",");
+        console.log(arrPersonageNames);
+        
+        for (let i = 0; i < arrPersonageNames.length; i++) {
+            const persName = arrPersonageNames[i];
+            let persConfig = null;
+            for (let j = 0; persConfig == null && j < jsons.length; j++) {
+                const json = jsons[j];
+                for (let p = 0; p < json.length; p++) {
+                    const eachPersCfg = json[p];
+                    if (eachPersCfg.name == persName) {
+                        persConfig = eachPersCfg;
+                        break;
+                    }
+                }
+            }
+
+            if (persConfig) {
+                CodeGenerator._snippetsGenerateForPers( persName, persConfig, jsonResult, mapCache );
+            } else {
+                console.error(persName + " was not found in map_personages and map_animals");
+            }
+        }
+
+        CodeGenerator.snippetsLog( JSON.stringify(jsonResult, null, "\t") );
+    }
+
+    static _snippetsGenerateForPers(persName, persConfig, jsonResult, mapCache)
+    {
+        console.log(persName, persConfig);
+        
+        if (persConfig.external_animations) 
+        {
+            persConfig.external_animations.push( {name: "idle"} );
+
+            for (let i = 0; i < persConfig.external_animations.length; i++) {
+                const anim = persConfig.external_animations[i];
+                const animName = anim.name;
+                let animPrefix = animName.toLowerCase().replace(/[_\W]/g, "");
+                let persLetter = persName[0];
+
+                // --- just a name of animation ---
+                let obj = {
+                    prefix      : `${animPrefix}`,
+                    description : `${persName} animation name : ${animName}`,
+                    body        : [
+                        `"${animName}"`
+                    ]
+                };
+                if (!mapCache[obj.prefix])  {
+                    mapCache[obj.prefix] = true;
+                    jsonResult[obj.description] = obj;
+                }
+
+                // --- IDLE : ii ---
+                if ( CodeGenerator._isIdle[animName] )
+                {
+                    let obj = {
+                        prefix      : `ii${persLetter}${animPrefix}`,
+                        description : `set_idle_animation '${persName}' : '${animName}'`,
+                        body        : [
+                            `{ "action": "set_idle_animation", "personage": "${persName}", "name": "${animName}", "force_play": true },`
+                        ]
+                    };
+                    if (!mapCache[obj.prefix])  {
+                        mapCache[obj.prefix] = true;
+                        jsonResult[obj.description] = obj;
+                    }
+                }
+                else 
+                {
+                    // --- ANIM : aa ---
+                    let obj = {
+                        prefix      : `aa${persLetter}${animPrefix}`,
+                        description : `play_model_animation '${persName}' : '${animName}'`,
+                        body        : [
+                            `{ \"action\": \"play_model_animation\", \"personage\": \"${persName}\", \"name\": \"${animName}\" },`
+                        ]
+                    };
+                    if (!mapCache[obj.prefix])  {
+                        mapCache[obj.prefix] = true;
+                        jsonResult[obj.description] = obj;
+                    }
+
+                    // --- ANIM : ww (+ wait_seconds) ---
+                    obj = {
+                        prefix      : `ww${persLetter}${animPrefix}`,
+                        description : `play_model_animation + wait_seconds '${persName}' : '${animName}'`,
+                        body        : [
+                            `{ \"action\": \"play_model_animation\", \"personage\": \"${persName}\", \"name\": \"${animName}\", \"wait_seconds\": 1.51 },`
+                        ]
+                    };
+                    if (!mapCache[obj.prefix])  {
+                        mapCache[obj.prefix] = true;
+                        jsonResult[obj.description] = obj;
+                    }
+                }
+            }
+        }
+    }
+
+
+    static snippetsClear() 
+    {
+        $("#snippetsGenerateResult").empty();
+    }
+
+    static snippetsCopy() 
+    {
+        let s = $("#snippetsGenerateResult").text();
+        let clipboard = nw.Clipboard.get();
+        clipboard.set(s, 'text');
+    }
+
+
+    static snippetsLog(message, level)
+    {
+        let domLog = $("#snippetsGenerateResult");
+
+        let domEntry = $("<span></span>");
+        domEntry.text( message + "\n" );
+        if (level) {
+            domEntry.addClass(level);
+        }
+        domLog.append( domEntry );
+        domLog.scrollTop(domLog.prop("scrollHeight"));
+
+        if (level == "err")  console.error( message );
+        if (level == "warn") console.warn( message );
+    }
+
 
 
     // -----------------------------------------------------------------

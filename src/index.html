@@ -418,14 +418,32 @@
                         </div>
                     </div>
 
-                    <!-- <blockquote>
+                    <blockquote>
                         4. Сгенерировать сниппеты для <b>vs_code</b>
                     </blockquote>
                     <div class="row">
-                        <div class="col-12 center">
-                            // TODO: разворачивающийся div с настройками
+                        <div class="col-4 right">
+                            Для персонажей: &nbsp;
                         </div>
-                    </div> -->
+                        <div class="col-4 center">
+                            <input type="text" placeholder="main,sarah,jimmy,ellie,cat" class="full-width font-small localStorageText" 
+                                    shu-default="main,sarah,jimmy,ellie,cat" id="txtGenerateSnippetsPersonagesList" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 center">
+                            <br />
+                            <button class="bg-green btn workButton" shu-onclick="btnGenerateSnippetsGenerate_click">Сгенерировать</button>
+                            <button class="bg-green s btn workButton" shu-onclick="btnenerateSnippetsCopy_click">Скопировать в буфер</button>
+                            <button class="bg-pink s btn workButton" shu-onclick="btnGenerateSnippetsClear_click">Очистить</button>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-12">
+                            <pre class="preLog json" id="snippetsGenerateResult"></pre>
+                        </div>
+                    </div>
 
                     <br />
                 </div>
