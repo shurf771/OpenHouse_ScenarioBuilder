@@ -98,6 +98,7 @@
     var lastKeyActivity       = 0;
     var strAllLines           = "";
     var isRegeneratingPlaned  = false;
+    var reloadTime            = 0;
 
     
     $(document).ready(function(){
@@ -201,6 +202,11 @@
     function cooldownInterval() {
         if (lastKeyActivity > 0 && Date.now() - lastKeyActivity >= COOLDOWN_REGEN_MS) {
             txtInput_change();
+        }
+        if (reloadTime > 0) {
+            var diff = ((new Date()).getTime() - reloadTime) / 1000;
+            diff = Math.floor(diff * 10) / 10;
+            document.getElementById("lblTimer").innerText = diff;
         }
     }
     
@@ -395,6 +401,8 @@
       inputDataIsChanged(true);
       viewReGenerateIsPlaned(false);
       isRegeneratingPlaned = false;
+
+      reloadTime = (new Date()).getTime();
     }
 
 
@@ -553,7 +561,8 @@
     <div id="divroot">
     
         <!-----------------  RESULT json code  ----------------->
-        <h3 class="alrt_green" style="margin-left:-20px"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small></h3>
+        <h3 class="alrt_green" style="margin-left:-20px"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small>
+          | <small id="lblTimer">...</small></h3>
         <div style="margin-top:5px;"  class="txtAreaInOut" id="divOutput"></div>
 
         <!-----------------  clipboard  ----------------->

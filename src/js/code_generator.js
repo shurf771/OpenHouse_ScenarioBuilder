@@ -45,7 +45,6 @@ class CodeGenerator
             'painting_floor_idle': true,
             'table_socker_idle': true,
             'guitar_idle': true,
-            'sit_idle': true,
             'play_stand_idle': true,
             'chainsaw_idle': true,
             'lotus_idle_ad': true,
@@ -55,6 +54,8 @@ class CodeGenerator
             'sitting_floor_idle': true,
             'ukulele_sit': true,
             'ukulele_stand': true,
+
+            'talk_sit': true,
 
             'jump_idle': true,
             'rolling_idle': true,
@@ -122,6 +123,8 @@ class CodeGenerator
 
         let arrPersonageNames = cfg.strPersonages.split(",");
         console.log(arrPersonageNames);
+
+        let listToWork = [];
         
         for (let i = 0; i < arrPersonageNames.length; i++) {
             const persName = arrPersonageNames[i];
@@ -138,23 +141,44 @@ class CodeGenerator
             }
 
             if (persConfig) {
-                CodeGenerator._snippetsGenerateForPers( persName, persConfig, jsonResult, mapCache );
+                listToWork.push({ persName: persName, persConfig: persConfig });
             } else {
                 console.error(persName + " was not found in map_personages and map_animals");
             }
         }
 
+        let mapAnimNameToPerses = {}; // animation names that are shared between several personages
+
+        for (let i = 0; i < listToWork.length; i++) {
+            const listItem = listToWork[i];
+            const persConfig = listItem.persConfig;
+            if (persConfig.external_animations) {
+                persConfig.external_animations.push( {name: "idle"} );
+                for (let j = 0; j < persConfig.external_animations.length; j++) {
+                    const animName = persConfig.external_animations[j].name;
+                    if (mapAnimNameToPerses[animName]) {
+                        mapAnimNameToPerses[animName].push( listItem.persName );
+                    } else {
+                        mapAnimNameToPerses[animName] = [ listItem.persName ];
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < listToWork.length; i++) {
+            const listItem = listToWork[i];
+            CodeGenerator._snippetsGenerateForPers( listItem.persName, listItem.persConfig, jsonResult, mapCache, mapAnimNameToPerses );
+        }
+
         CodeGenerator.snippetsLog( JSON.stringify(jsonResult, null, "\t") );
     }
 
-    static _snippetsGenerateForPers(persName, persConfig, jsonResult, mapCache)
+    static _snippetsGenerateForPers(persName, persConfig, jsonResult, mapCache, mapAnimNameToPerses)
     {
         console.log(persName, persConfig);
-        
+
         if (persConfig.external_animations) 
         {
-            persConfig.external_animations.push( {name: "idle"} );
-
             for (let i = 0; i < persConfig.external_animations.length; i++) {
                 const anim = persConfig.external_animations[i];
                 const animName = anim.name;
@@ -164,7 +188,7 @@ class CodeGenerator
                 // --- just a name of animation ---
                 let obj = {
                     prefix      : `${animPrefix}`,
-                    description : `${persName} animation name : ${animName}`,
+                    description : `${mapAnimNameToPerses[animName].join(",")} anim : ${animName}`,
                     body        : [
                         `"${animName}"`
                     ]
