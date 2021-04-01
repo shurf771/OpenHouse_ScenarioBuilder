@@ -12,7 +12,16 @@ const COMICS_ICON =
     "jimmy"   : "Emotions_Jimmy/Emotions_Jimmy_Default",
     "ellie"   : "Emotions_Elly/Emotions_Mechanic_Ellie_Default",
     "charles" : "Emotions_Charles/Emotions_Charles_Default"
-}
+};
+
+const TALK_AND_IDLES_ANIMATIONS = 
+{
+    "main"    : { idles: ["idle", "idle_bench", "Sit_Listen"], talks: ["talk", "Sit_Talk"] },
+    "sarah"   : { idles: ["idle", "idle_bench", "sit_listen"], talks: ["talk", "sit_talk"] },
+    "jimmy"   : { idles: ["idle", "sit_idle"],                 talks: ["talk", "talk_sit"] },
+    "ellie"   : { idles: ["idle", "idle_bench", "Sit_Listen"], talks: ["talk", "Sit_Talk"] },
+    "charles" : { idles: [], talks: [] },
+};
 
 
 class JSONGenerator
@@ -320,7 +329,13 @@ class JSONGenerator
         let isErrorAlerted = false;
         let lastTalker = null;
         let isTalkAnimationsOn = JSONGenerator.defaults["talk.animations"].value;
+        let isTalkMustAAnimationsOn = JSONGenerator.defaults["talk.animations.must-a"].value;
         let isComicsAnimationsOn = JSONGenerator.defaults["comics.animations"].value;
+        let isComicsReactionsOn = JSONGenerator.defaults["comics.animation.reactions"].value;
+        let isTalkAndIdleCommentsOn = JSONGenerator.defaults["comics.animation.addtalkcomments"].value;
+        let idleTalkTabs = 2;
+
+        if (isComicsReactionsOn) idleTalkTabs = 1;
         
         for (let i=0; i<talksArr.length; i++)
         {
@@ -329,7 +344,7 @@ class JSONGenerator
             // talks
             if (talkType == "praise" || talkType == "idle")
             {
-                let bubbleAnimation = (isTalkAnimationsOn 
+                let bubbleAnimation = ((isTalkAnimationsOn && talkType == "praise") || (isTalkMustAAnimationsOn && talkType == "idle")
                     ? (JSONGenerator.defaults["talk.animation." + talk.pers] && JSONGenerator.defaults["talk.animation." + talk.pers].value)
                     : null);
                 let template = (bubbleAnimation ? TPL_TALK_EX : TPL_TALK);
@@ -345,6 +360,8 @@ class JSONGenerator
             else if (talkType == "quest")
             {
                 let tplComicsPersesArr = [];
+                let strReactionsArr = [];
+
                 for (let p=0; p<talkingPersonages.length; p++) {
                     let talkingPers = talkingPersonages[p];
                     let persIcon = talkingPers.icon;
@@ -357,33 +374,57 @@ class JSONGenerator
                         "__!isspeak!__"   : (talk.pers == talkingPers.name ? "true" : "false")
                     });
                     tplComicsPersesArr.push(strComicsPers);
+
+                    // reactions for others personages
+                    if (isComicsReactionsOn && talk.pers != talkingPers.name && JSONGenerator.defaults["comics.animation." + talkingPers.name]) {
+                        strReactionsArr.push(replaces(TPL_COMICS_ANIM_REACTION, {
+                            "__!tpl:pers!__" : talkingPers.name,
+                            "__!tpl:anim!__" : JSONGenerator.defaults["comics.animation." + talkingPers.name].value,
+                            "__!tpl:wait!__" : Number(1.0 + (0.5 * strReactionsArr.length)).toFixed(1)
+                        }));
+                    }
                 }
 
-                let template = (isComicsAnimationsOn ? TPL_COMICS_EX : TPL_COMICS);
+                let template = (isComicsAnimationsOn ? (isComicsReactionsOn ? TPL_COMICS_EX_REACTS : TPL_COMICS_EX) : TPL_COMICS);
                 let strComicsAnimsArr = [];
+                let strComicsAnimsArrCommentsArr = [];
                 
                 if (isComicsAnimationsOn) {
                     if (lastTalker != talk.pers)
                     {
                         // previous speaker -> idle
                         if (lastTalker && JSONGenerator.defaults["comics.animation." + lastTalker]) {
+                            let commentIdles = "";
+                            if (isTalkAndIdleCommentsOn && TALK_AND_IDLES_ANIMATIONS[talk.pers]) {
+                                commentIdles = " //: " + TALK_AND_IDLES_ANIMATIONS[talk.pers]["idles"].join(" , ");
+                            }
+
                             strComicsAnimsArr.push(replaces(TPL_COMICS_ANIM_IDLE, {
                                 "__!tpl:pers!__" : lastTalker
                             }));
+                            strComicsAnimsArrCommentsArr.push(commentIdles);
                         }
                         // new speaker -> talk
                         if (JSONGenerator.defaults["comics.animation." + talk.pers]) {
-                            strComicsAnimsArr.push(replaces(TPL_COMICS_ANIM_TALK, {
+                            let commentTalks = "";
+                            if (isTalkAndIdleCommentsOn && TALK_AND_IDLES_ANIMATIONS[talk.pers]) {
+                                commentTalks = " //: " + TALK_AND_IDLES_ANIMATIONS[talk.pers]["talks"].join(" , ");
+                            }
+
+                            let talkTpl = (isComicsReactionsOn ? TPL_COMICS_ANIM_TALK_FORCE : TPL_COMICS_ANIM_TALK);
+                            strComicsAnimsArr.push(replaces(talkTpl, {
                                 "__!tpl:pers!__" : talk.pers
                             }));
+                            strComicsAnimsArrCommentsArr.push(commentTalks);
                         }
                     }
-                    // new speaker -> pre-talk animation
-                    if (JSONGenerator.defaults["comics.animation." + talk.pers]) {
+                    // new speaker -> pre-talk animation (if not "reactions" mode)
+                    if (JSONGenerator.defaults["comics.animation." + talk.pers] && !isComicsReactionsOn) {
                         strComicsAnimsArr.push(replaces(TPL_COMICS_ANIM, {
                             "__!tpl:pers!__" : talk.pers,
                             "__!tpl:anim!__" : JSONGenerator.defaults["comics.animation." + talk.pers].value
                         }));
+                        strComicsAnimsArrCommentsArr.push("");
                     }
                 }
 
@@ -396,9 +437,26 @@ class JSONGenerator
                     strShowQusetIcon = replaces(TPL_QUEST_ICON, {"__!tpl:qid!__": nextQuestId});
                 }
 
+                // manual strComicsAnimsArr.join() ... to add comments in the end
+                let strComicsAnimsArrJoin = "";
+                for (let si=0; si<strComicsAnimsArr.length; si++) {
+                    if (!isComicsReactionsOn && si == strComicsAnimsArr.length-1)
+                        strComicsAnimsArrJoin += strComicsAnimsArr[si] + strComicsAnimsArrCommentsArr[si];
+                    else
+                        strComicsAnimsArrJoin += strComicsAnimsArr[si] + "," + strComicsAnimsArrCommentsArr[si] + "\n";
+                }
+
+                // [2] manual strReactionsArr.join()
+                if (strReactionsArr.length > 0) {
+                    strComicsAnimsArrJoin += "\n";
+                    for (let si=0; si<strReactionsArr.length; si++) {
+                        strComicsAnimsArrJoin += strReactionsArr[si] + "," + "\n";
+                    }
+                }
+
                 let str = replaces(template, {
                     "__!id!__"                : talk.id,
-                    "__!tpl:anims!__"         : tabs( strComicsAnimsArr.join(",\n"), 2 ),
+                    "__!tpl:anims!__"         : tabs( strComicsAnimsArrJoin, idleTalkTabs ),
                     "__!tpl:perses!__"        : tabs( tplComicsPersesArr.join(",\n"), 2 ),
                     "__!tpl:questicon!__"     : strShowQusetIcon,
                     "__!tpl:hidequesticon!__" : strHideQusetIcon
@@ -430,6 +488,10 @@ class JSONGenerator
             if (isComicsAnimationsOn) {
                 // last speaker -> idle
                 if (lastTalker && JSONGenerator.defaults["comics.animation." + lastTalker]) {
+                    if (isTalkAndIdleCommentsOn && TALK_AND_IDLES_ANIMATIONS[lastTalker]) {
+                        strTalksArr.push("//: " + TALK_AND_IDLES_ANIMATIONS[lastTalker]["idles"].join(" , "));
+                    }
+
                     strTalksArr.push(replaces(TPL_COMICS_ANIM_IDLE, {
                         "__!tpl:pers!__" : lastTalker
                     }));
@@ -504,6 +566,16 @@ __!tpl:perses!__
     ]__!tpl:hidequesticon!__}
 ]}`;
 
+
+const TPL_COMICS_EX_REACTS =
+`{ "scenario": "parallel", "actions" : [__!tpl:questicon!__
+__!tpl:anims!__
+    { "action": "show_comics", "text_id": "__!id!__", "personages": [
+__!tpl:perses!__
+    ]__!tpl:hidequesticon!__}
+]}`;
+
+
 const TPL_QUEST_ICON = `
     { "action": "show_quest_icon", "quest_id": __!tpl:qid!__ },`;
 
@@ -512,9 +584,12 @@ const TPL_QUEST_ICON_HIDE = `, "hide_quest_icon": true`;
 
 const TPL_COMICS_ANIM_IDLE = `{ "action": "set_idle_animation", "personage": "__!tpl:pers!__", "name": "idle", "force_play": true }`;
 
-const TPL_COMICS_ANIM_TALK = `{ "action": "set_idle_animation", "personage": "__!tpl:pers!__", "name": "talk" }`;
+const TPL_COMICS_ANIM_TALK       = `{ "action": "set_idle_animation", "personage": "__!tpl:pers!__", "name": "talk" }`;
+const TPL_COMICS_ANIM_TALK_FORCE = `{ "action": "set_idle_animation", "personage": "__!tpl:pers!__", "name": "talk", "force_play": true }`;
 
 const TPL_COMICS_ANIM = `{ "action": "play_model_animation", "personage": "__!tpl:pers!__", "name": "__!tpl:anim!__" }`;
+
+const TPL_COMICS_ANIM_REACTION = `{ "action": "play_model_animation", "personage": "__!tpl:pers!__", "name": "__!tpl:anim!__", "wait_seconds": __!tpl:wait!__ }`;
 
 
 

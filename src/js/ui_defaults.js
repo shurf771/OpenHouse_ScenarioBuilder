@@ -39,6 +39,11 @@ class UIDefaults
                 "type": "bool",
                 "textValue": "1"
             },
+            "talk.animations.must-a" : {
+                "descr": "Вставлять анимации-заглушки в баблы (talk) в айдлах (\"Must-A\")",
+                "type": "bool",
+                "textValue": "1"
+            },
             "talk.animation.main" : {
                 "descr": "Анимация-заглушка в баблах (talk) для main",
                 "type": "string",
@@ -83,6 +88,16 @@ class UIDefaults
                 "descr": "Анимация 'через talk' в комиксы для ellie",
                 "type": "string",
                 "textValue": "idea"
+            },
+            "comics.animation.reactions" : {
+                "descr": "(new) Реакция остальных на talk",
+                "type": "bool",
+                "textValue": "1"
+            },
+            "comics.animation.addtalkcomments" : {
+                "descr": "(new) Добавить в конец строки коммент с названиями анимаций (talk, talksit, ...)",
+                "type": "bool",
+                "textValue": "1"
             }
         };
 

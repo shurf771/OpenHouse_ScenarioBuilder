@@ -32,7 +32,11 @@
     #divOutput {
       background-color: #dbefdc;
       min-height:300px;
-      padding: 10px;
+      padding: 5px;
+    }
+
+    .col-outputs {
+      padding: 0px 3px;
     }
 
     #txtClipboard {
@@ -47,11 +51,11 @@
 
     .outputItem1 {
       display: inline-block;
-      /*margin: 20px;*/
+      margin: 0;
       background: #efffe6;
       border: 1px solid #4e905c;
       cursor: pointer;
-      width: 50%;
+      width: 100%;
     }
     .outputItem1:hover {
       background: #f1f7ee;
@@ -59,11 +63,11 @@
 
     .outputItem2 {
       display: inline-block;
-      /*margin: 20px;*/
+      margin: 0;
       background: #d1ffea;
       border: 1px solid #4e7d90;
       cursor: pointer;
-      width: 45%;
+      width: 100%;
     }
     .outputItem2:hover {
       background: #f1f7ee;
@@ -77,12 +81,25 @@
       background: #ffd1d1 !important;
     }
 
+    .old {
+      background: #dfdfdf !important;
+    }
+
     #cmdCopyAll {
       cursor: pointer;
     }
 
     #divOutput,#txtClipboard,.outputItem {
       font-size: 12px;
+    }
+
+    .h4-copy {
+      color: #387CB5; 
+      display: inline-block;
+      margin: 12px 5px 2px 5px;
+    }
+    .h4-copy:hover {
+      color: rgb(9, 140, 248)
     }
 
   </style>
@@ -95,16 +112,18 @@
     const LOG_PATH        = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
 
     var COOLDOWN_REGEN_MS     = 500;
+    var SCAN_FILE_EACH_TICK   = true;
     var lastKeyActivity       = 0;
     var strAllLines           = "";
     var isRegeneratingPlaned  = false;
     var reloadTime            = 0;
+    var curText               = null;
 
     
     $(document).ready(function(){
         onReady();
         checkAutoLoadFile();
-        watch();
+        //watch();
     });
 
     // global keys
@@ -142,10 +161,7 @@
           try {
               let buf = fs.readFileSync(path);
               str = buf.toString();
-              isRegeneratingPlaned = true;
-              viewReGenerateIsPlaned(true);
-              $("#txtInput").val(str);
-              setTimeout(txtInput_change, 10);
+              updateTextIfNeeds(str);
           } 
           catch (err) {
               console.log("loadText ERROR reading file: ", err);
@@ -162,13 +178,20 @@
               async: false,
               success: function(data) {
                   // console.log(data);
-                  isRegeneratingPlaned = true;
-                  viewReGenerateIsPlaned(true);
-                  $("#txtInput").val(data);
-                  setTimeout(txtInput_change, 10);
+                  updateTextIfNeeds(data);
               }
           });
         }
+    }
+
+    function updateTextIfNeeds(newText) {
+      if (curText != newText) {
+        curText = newText;
+        isRegeneratingPlaned = true;
+        viewReGenerateIsPlaned(true);
+        $("#txtInput").val(curText);
+        setTimeout(txtInput_change, 10);
+      }
     }
     
     function onReady() 
@@ -200,6 +223,9 @@
     }
 
     function cooldownInterval() {
+        if (SCAN_FILE_EACH_TICK) {
+          checkAutoLoadFile();
+        }
         if (lastKeyActivity > 0 && Date.now() - lastKeyActivity >= COOLDOWN_REGEN_MS) {
             txtInput_change();
         }
@@ -221,13 +247,25 @@
       isRegeneratingPlaned = true;
     }
 
+    const GROUPS_RU = {
+      'camera': [ "Camera move/zoom" ],
+      'position': [ "Position", "Walk" ],
+      'look': [ "Look" ],
+      'map_object': [ null, "Click map_object" ],
+      'iso': [ "ISO modification", "ISO coordinates" ],
+      'map_object_move': [ "Move visuals", "Visual coordinates" ],
+      'error': [ "Errors" ]
+    };
 
     var RESULTS = {};
     var RESULTS_ARR = [];
 
+    var copyLinesByGroup = {};
+
     var CFG = {
       "move_camera_fast": {
         order: 20,
+        group: 'camera',
         key: "move_camera_fast",
         prePattern: "CAMERA POSITION",
         pattern: /^.*I:\[lua\] CAMERA POSITION: ([-\.\d]+) , ([-\.\d]+).*$/,
@@ -235,6 +273,7 @@
       },
       "zoom_camera": {
         order: 10,
+        group: 'camera',
         key: "zoom_camera",
         prePattern: "ZOOM:",
         pattern: /^.*D:\[lua\] ZOOM: ([-\.\d]+)$/,
@@ -243,6 +282,7 @@
       },
       "set_position": {
         order: 30,
+        group: 'position',
         key: "set_position_$1",
         prePattern: "POSITION of",
         pattern: /^.*D:\[lua\] POSITION of (\w+):\s+([-\.\d]+) ; ([-\.\d]+).*$/,
@@ -253,6 +293,7 @@
       },
       "look": {
         order: 40,
+        group: 'look',
         key: "look_$1",
         prePattern: "[lua] LOOK",
         pattern: /^.*D:\[lua\] LOOK (\w+) at (\w+)$/,
@@ -262,6 +303,7 @@
       },
       "map_object:on_click": {
         order: 50,
+        group: 'map_object',
         key: "map_object:on_click",
         prePattern: "map_object:on_click",
         pattern: /^.*I:\[lua\] map_object:on_click\s(\w+)$/,
@@ -270,6 +312,7 @@
       "iso:change": {
         order: 60,
         key: "iso:change",
+        group: 'iso',
         prePattern: "ISO CHANGE",
         pattern: /^.*D:\[lua\] ISO CHANGE\s*"([^"]+)"\s*"coord":\s{"w":\s([-.\d]+),\s?"h":\s([-.\d]+),\s?"x":\s([-.\d]+),\s?"y":\s([-.\d]+)}$/,
         replace: [ 
@@ -280,6 +323,7 @@
       "iso:change:view": {
         order: 70,
         key: "iso:change:view",
+        group: 'iso',
         lines: 3,
         prePattern: "view:",
         pattern: /^view:\s(\w+)\s?\n\s"x":\s?([-.\d]+),\n\s?"y":\s?([-.\d]+)$/m,
@@ -288,10 +332,22 @@
           '"x": $2,\n"y": $3' 
         ]
       },
+      "map_object_move": {
+        order: 80,
+        group: "map_object_move",
+        key: "map_object_move_$1",
+        prePattern: "D:[lua] MOVE",
+        pattern: /^.*D:\[lua\] MOVE\s+ "([^"]+)"\s+from\s+{([-.\d]+),([-.\d]+)}\s+to\s+{([-.\d]+),([-.\d]+)}.+$/,
+        replace: [ 
+          '"$1"', 
+          '"x": $4,\n"y": $5' 
+        ]
+      },
       "error:walk": {
         order: 100,
         extraClass: "error",
         key: "error:walk:$1:$2:$3",
+        group: 'error',
         prePattern: "Error in walknig path, personage",
         pattern: /^.*Error in walknig path, personage:\s(\w+),\sx:([\d-\.]+),\sy:([\d-\.]+)$/,
         replace: [ 
@@ -366,6 +422,7 @@
                   "i"          : i,
                   "order"      : CFG[actionName].order,
                   "extraClass" : CFG[actionName].extraClass,
+                  "group"      : CFG[actionName].group,
                   "text_1"     : resultLine,
                   "text_2"     : null
                 }
@@ -396,6 +453,8 @@
         return a.order - b.order;
       });
 
+      console.log(RESULTS_ARR);
+
       redrawResults();
       
       inputDataIsChanged(true);
@@ -410,20 +469,60 @@
     {
       $("#divOutput").empty();
 
+      copyLinesByGroup = {};
+      var prevGroup = null;
+
       var strResults = [];
       var domItems  = [];
       
       for (var i=0; i<RESULTS_ARR.length; i++)
-      {
+      { 
         var strResult  = RESULTS_ARR[i]["text_1"];
         var strResult2 = RESULTS_ARR[i]["text_2"];
         var extraClass = RESULTS_ARR[i]["extraClass"];
+        var curGroup   = RESULTS_ARR[i]["group"];
+
+        // new group
+        if (curGroup != prevGroup)
+        {
+          prevGroup = curGroup;
+          var domRowGroup = $("<div />").addClass("row");
+          var domColGroups = [
+            $("<div />").addClass("col-6").addClass("col-outputs"),
+            $("<div />").addClass("col-6").addClass("col-outputs")
+          ];
+          for (var subgroup = 0; subgroup < GROUPS_RU[curGroup].length; subgroup++) {
+            if (GROUPS_RU[curGroup][subgroup]) {
+              domColGroups[subgroup].append(
+                $("<h4 />").addClass("h4-copy").attr("group",curGroup).attr("subgroup",subgroup).text(GROUPS_RU[curGroup][subgroup])
+              );
+            }
+          }
+          
+          domRowGroup.append(domColGroups);
+          domItems.push(domRowGroup);
+        }
+
+        var domRow = $("<div />").addClass("row");
+        domItems.push(domRow);
 
         strResults.push(strResult);
-        domItems.push( addOutputItem(strResult, 1, extraClass) );
+
+        if (!copyLinesByGroup[curGroup])
+          copyLinesByGroup[curGroup] = [ [], [] ];
+
+        var domCol1 = $("<div />").addClass("col-6").addClass("col-outputs");
+        var domCol2 = $("<div />").addClass("col-6").addClass("col-outputs");
+        domRow.append([ domCol1, domCol2 ]);
+        
+        if (strResult) {
+          copyLinesByGroup[curGroup][0].push(strResult);
+          domCol1.append(  addOutputItem(strResult, 1, extraClass)  );
+        }
         // alternative
         if (strResult2) {
-          domItems.push( addOutputItem(strResult2, 2, extraClass) );
+          copyLinesByGroup[curGroup][1].push(strResult2);
+          domCol2.append(  addOutputItem(strResult2, 2, extraClass) );
         }
       }
 
@@ -436,7 +535,20 @@
          copyTextToClipboard(text);
          blink($(e.currentTarget));
       });
+
+      $(".h4-copy").click(onH4CopyClicked);
     }
+
+    function onH4CopyClicked(e) {
+      var group = $(e.currentTarget).attr("group");
+      var subgroup = $(e.currentTarget).attr("subgroup");
+      
+      var text = copyLinesByGroup[group][subgroup].join(",\n");
+      copyTextToClipboard(text);
+
+      blink($(e.currentTarget));
+    }
+
 
     function blink(target) {
       target.addClass("blinking");
@@ -561,16 +673,16 @@
     <div id="divroot">
     
         <!-----------------  RESULT json code  ----------------->
-        <h3 class="alrt_green" style="margin-left:-20px"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small>
+        <h3 class="alrt_green"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small>
           | <small id="lblTimer">...</small></h3>
         <div style="margin-top:5px;"  class="txtAreaInOut" id="divOutput"></div>
 
         <!-----------------  clipboard  ----------------->
-        <h4 style="margin-left:-20px"><span class="emoji">&#x2198;</span> Clipboard <small id="cmdCopyAll">(copy all)</small></h4>
+        <h4><span class="emoji">&#x2198;</span> Clipboard <small id="cmdCopyAll">(copy all)</small></h4>
         <div id="txtClipboard"></div>
 
         <!-----------------  input 1 :  google doc  ----------------->
-        <h4 shu-toggle="#txtInput" style="margin-left:-20px"><span class="emoji">&#x2198;</span> Input <small>:: CopyPaste from Debug Console (click me to expand)</small></h4>
+        <h4 shu-toggle="#txtInput"><span class="emoji">&#x2198;</span> Input <small>:: CopyPaste from Debug Console (click me to expand)</small></h4>
         <textarea class="txtAreaInOut" id="txtInput" style="display: none;"></textarea>
         
     </div>
