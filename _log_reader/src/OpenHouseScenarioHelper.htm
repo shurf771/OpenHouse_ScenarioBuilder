@@ -254,7 +254,8 @@
       'map_object': [ null, "Click map_object" ],
       'iso': [ "ISO modification", "ISO coordinates" ],
       'map_object_move': [ "Move visuals", "Visual coordinates" ],
-      'error': [ "Errors" ]
+      'error': [ "Errors" ],
+      'copy_level_json': [ "Level JSON", "Level JSON" ]
     };
 
     var RESULTS = {};
@@ -353,6 +354,17 @@
         replace: [ 
           'ERROR in "walk" for $1', 
           '"x":$2, "y":$3' 
+        ]
+      },
+      "copy_level_json": {
+        order: 200,
+        key: "copy_level_json",
+        group: 'copy_level_json',
+        prePattern: "CallExtension: copy_to_clipboard",
+        pattern: /^.+copy_to_clipboard\s(.+).*$/,
+        replace: [
+          '',
+          '$1'
         ]
       }
     };
@@ -491,7 +503,7 @@
             $("<div />").addClass("col-6").addClass("col-outputs"),
             $("<div />").addClass("col-6").addClass("col-outputs")
           ];
-          for (var subgroup = 0; subgroup < GROUPS_RU[curGroup].length; subgroup++) {
+          for (var subgroup = 0; GROUPS_RU[curGroup] && subgroup < GROUPS_RU[curGroup].length; subgroup++) {
             if (GROUPS_RU[curGroup][subgroup]) {
               domColGroups[subgroup].append(
                 $("<h4 />").addClass("h4-copy").attr("group",curGroup).attr("subgroup",subgroup).text(GROUPS_RU[curGroup][subgroup])
