@@ -34,6 +34,12 @@ class UIDefaults
                 "type": "position",
                 "textValue": "0, 0"
             },
+            "position.tony" : {
+                "order": 50,
+                "descr": "Дефолтная позиция tony",
+                "type": "position",
+                "textValue": "0, 0"
+            },
             "talk.animations" : {
                 "descr": "Вставлять анимации-заглушки в баблы (talk)",
                 "type": "bool",
@@ -47,7 +53,7 @@ class UIDefaults
             "talk.animation.main" : {
                 "descr": "Анимация-заглушка в баблах (talk) для main",
                 "type": "string",
-                "textValue": "joy"
+                "textValue": "idea"
             },
             "talk.animation.sarah" : {
                 "descr": "Анимация-заглушка в баблах (talk) для sarah",
@@ -64,6 +70,11 @@ class UIDefaults
                 "type": "string",
                 "textValue": "idea"
             },
+            "talk.animation.tony" : {
+                "descr": "Анимация-заглушка в баблах (talk) для tony",
+                "type": "string",
+                "textValue": "idea"
+            },
             "comics.animations" : {
                 "descr": "Вставлять заглушки анимаций 'через talk' в комиксы",
                 "type": "bool",
@@ -72,7 +83,7 @@ class UIDefaults
             "comics.animation.main" : {
                 "descr": "Анимация 'через talk' в комиксы для main",
                 "type": "string",
-                "textValue": "joy"
+                "textValue": "idea"
             },
             "comics.animation.sarah" : {
                 "descr": "Анимация 'через talk' в комиксы для sarah",
@@ -86,6 +97,11 @@ class UIDefaults
             },
             "comics.animation.ellie" : {
                 "descr": "Анимация 'через talk' в комиксы для ellie",
+                "type": "string",
+                "textValue": "idea"
+            },
+            "comics.animation.tony" : {
+                "descr": "Анимация 'через talk' в комиксы для tony",
                 "type": "string",
                 "textValue": "idea"
             },
