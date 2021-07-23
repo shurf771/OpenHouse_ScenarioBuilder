@@ -250,12 +250,14 @@
     const GROUPS_RU = {
       'camera': [ "Camera move/zoom" ],
       'position': [ "Position", "Walk" ],
+      'set_idle_animation': [ "set_idle_animation" ],
       'look': [ "Look" ],
       'map_object': [ null, "Click map_object" ],
       'iso': [ "ISO modification", "ISO coordinates" ],
       'map_object_move': [ "Move visuals", "Visual coordinates" ],
+      'change_world_object_state': [ "change_world_object_state" ],
       'error': [ "Errors" ],
-      'copy_level_json': [ "Level JSON", "Level JSON" ]
+      'copy_level_json': [ "Level JSON", "Level JSON" ],
     };
 
     var RESULTS = {};
@@ -280,6 +282,16 @@
         pattern: /^.*D:\[lua\] ZOOM: ([-\.\d]+)$/,
         replace: [ '{ "action": "zoom_camera", "zoom": $1, "time": 1, "transition": "easeout"}' ],
         func_postprocess: "zoom_round_value"
+      },
+      "set_idle_animation": {
+        order: 25,
+        group: 'set_idle_animation',
+        key: "set_idle_animation_$1",
+        prePattern: "[lua] SET_IDLE_ANIMATION",
+        pattern: /^.*D:\[lua\] SET_IDLE_ANIMATION for (\w+):  (\w+)$/,
+        replace: [ 
+          '{ "action": "set_idle_animation", "personage": "$1", "name": "$2", "force_play": true, "mix_time": 0 }'
+        ]
       },
       "set_position": {
         order: 30,
@@ -342,6 +354,16 @@
         replace: [ 
           '"$1"', 
           '"x": $4,\n"y": $5' 
+        ]
+      },
+      "change_world_object_state": {
+        order: 90,
+        group: "change_world_object_state",
+        key: "change_world_object_state_$1",
+        prePattern: "D:[lua] STATE of",
+        pattern: /^.*D:\[lua\] STATE of  "([^"]+)"  =>  (\d+)  of \d+$/,
+        replace: [ 
+          '{ "action": "change_world_object_state", "world_object": "$1", "state": $2 }'
         ]
       },
       "error:walk": {
