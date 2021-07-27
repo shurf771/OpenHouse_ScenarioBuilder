@@ -255,6 +255,7 @@
       'map_object': [ null, "Click map_object" ],
       'iso': [ "ISO modification", "ISO coordinates" ],
       'map_object_move': [ "Move visuals", "Visual coordinates" ],
+      'talk_offset': [ "Talk text_id", "Talk offset" ],
       'change_world_object_state': [ "change_world_object_state" ],
       'error': [ "Errors" ],
       'copy_level_json': [ "Level JSON", "Level JSON" ],
@@ -354,6 +355,17 @@
         replace: [ 
           '"$1"', 
           '"x": $4,\n"y": $5' 
+        ]
+      },
+      "talk_offset": {
+        order: 85,
+        group: "talk_offset",
+        key: "talk_offset_$1",
+        prePattern: "D:[lua] talk bubble offset",
+        pattern: /^.*D:\[lua\] talk bubble offset : ([\w\.]+) ; ([-.\d]+),([-.\d]+)$/,
+        replace: [ 
+          '"$1"', 
+          ', "offset": {"x": $2, "y": $3}' 
         ]
       },
       "change_world_object_state": {
