@@ -103,7 +103,7 @@ class JSONGenerator
         let activeMainPersonages = [];
 
         let _talkingPersesMap = {};
-        let talkingPersonages = [];
+        let talkingPersonages = []; // comics talking
 
         for (let i=0; quest.rawLocalizationRows && i<quest.rawLocalizationRows.length; i++) {
             let pers = String(quest.rawLocalizationRows[i].Comment).trim().toLowerCase();
@@ -127,6 +127,23 @@ class JSONGenerator
                 talkingPersonages.push(_talkingPersesMap[pers]);
             }
         }
+
+        // add these personages always into head ( "generate.personages.head" setting )
+        let forceMainPersonagesArray = JSONGenerator.defaults["generate.personages.head"].value.match(/(\w+)/g);
+        if (forceMainPersonagesArray && forceMainPersonagesArray.length > 0) {
+            for (let fi=0; fi<forceMainPersonagesArray.length; fi++) {
+                let forcePersName = forceMainPersonagesArray[fi];
+                if (!_actMainPersesMap[forcePersName]) {
+                    _actMainPersesMap[forcePersName] = {
+                        "name": forcePersName,
+                        "pos": ( JSONGenerator.defaults["position."+forcePersName] ? JSONGenerator.defaults["position."+forcePersName].value : {x:0,y:0} ),
+                        "order": ( JSONGenerator.defaults["position."+forcePersName] ? JSONGenerator.defaults["position."+forcePersName].order: 9999 )
+                    };
+                    activeMainPersonages.push(_actMainPersesMap[forcePersName]);
+                }
+            }
+        }
+
         activeMainPersonages.sort((a,b)=>{ return a.order - b.order; });
         talkingPersonages.sort((a,b)=>{ return a.order - b.order; });
 

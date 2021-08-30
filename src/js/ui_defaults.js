@@ -114,6 +114,11 @@ class UIDefaults
                 "descr": "(new) Добавить в конец строки коммент с названиями анимаций (talk, talksit, ...)",
                 "type": "bool",
                 "textValue": "1"
+            },
+            "generate.personages.head" : {
+                "descr": "Всегда генерировать в шапке этих персов",
+                "type": "string",
+                "textValue": "main,sarah,jimmy,ellie,tony"
             }
         };
 
