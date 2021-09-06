@@ -91,7 +91,7 @@ class JSONGenerator
         
         let replacesParams = {
             "__!quest:id!__"          : quest.id,
-            "__!quest:title!__"       : quest.title,
+            "__!quest:title!__"       : String(quest.title).replace(/\r?\n/g, " "),
             "__!questblock:type!__"   : (quest.is_quest_group_complete ? "quest_group_complete" : "quest"),
             "__!defaults:camera:x!__" : JSONGenerator.defaults.camera.value.x,
             "__!defaults:camera:y!__" : JSONGenerator.defaults.camera.value.y,
@@ -347,12 +347,18 @@ class JSONGenerator
         // console.log(" talkins # " + talkType + ": " , talksArr);
         let isErrorAlerted = false;
         let lastTalker = null;
+        let lastSprites = [null, null]; // [left, right]
+        let lastComicsActivePersStr = null;
         let isTalkAnimationsOn = JSONGenerator.defaults["talk.animations"].value;
         let isTalkMustAAnimationsOn = JSONGenerator.defaults["talk.animations.must-a"].value;
         let isComicsAnimationsOn = JSONGenerator.defaults["comics.animations"].value;
         let isComicsReactionsOn = JSONGenerator.defaults["comics.animation.reactions"].value;
+        let isComicsOnlyIdles = JSONGenerator.defaults["comics.animation.onlyidle"].value;
         let isTalkAndIdleCommentsOn = JSONGenerator.defaults["comics.animation.addtalkcomments"].value;
         let idleTalkTabs = 2;
+        let isMinimalizeComicsSpritesIfGt2 = JSONGenerator.defaults["comics.sprites.minimalize.ifgreater2"].value;
+        let isMinimalizeComicsSpritesIfGt3 = JSONGenerator.defaults["comics.sprites.minimalize.ifgreater3"].value;
+        let isMinimalizeComicsSprites = ((talkingPersonages.length > 2 && isMinimalizeComicsSpritesIfGt2) || (talkingPersonages.length > 3 && isMinimalizeComicsSpritesIfGt3));
 
         if (isComicsReactionsOn) idleTalkTabs = 1;
         
@@ -384,24 +390,63 @@ class JSONGenerator
                 for (let p=0; p<talkingPersonages.length; p++) {
                     let talkingPers = talkingPersonages[p];
                     let persIcon = talkingPers.icon;
-                    if (talk.pers == talkingPers.name && talk.comicsIcon) {
+                    let isActivePers = (talk.pers == talkingPers.name);
+                    let isPreviuosPers = (lastTalker == talkingPers.name);
+
+                    if (isActivePers && talk.comicsIcon) {
                         persIcon = persIcon.substr(0, persIcon.indexOf("/")) + "/" + talk.comicsIcon;
                     }
                     let strComicsPers = replaces(TPL_COMICS_PERS, {
                         "__!pers!__"      : talkingPers.name,
                         "__!pers:icon!__" : persIcon,
-                        "__!isspeak!__"   : (talk.pers == talkingPers.name ? "true" : "false")
+                        "__!isspeak!__"   : (isActivePers ? "true" : "false")
                     });
-                    tplComicsPersesArr.push(strComicsPers);
+
+                    // show only 2 sprites
+                    if (isMinimalizeComicsSprites) {
+                        if (isActivePers) {
+                            if (lastTalker) {
+                                if (lastTalker == lastSprites[0]) {
+                                    tplComicsPersesArr[0] = lastComicsActivePersStr;
+                                    tplComicsPersesArr[1] = strComicsPers;
+                                    lastSprites[1]        = talkingPers.name;
+                                }
+                                if (lastTalker == lastSprites[1]) {
+                                    tplComicsPersesArr[1] = lastComicsActivePersStr;
+                                    tplComicsPersesArr[0] = strComicsPers;
+                                    lastSprites[0]        = talkingPers.name;
+                                }
+                            }
+                            else {
+                                tplComicsPersesArr.push(strComicsPers);
+                                lastSprites[0] = talkingPers.name;
+                            }
+
+                            lastComicsActivePersStr = replaces(TPL_COMICS_PERS, {
+                                "__!pers!__"      : talkingPers.name,
+                                "__!pers:icon!__" : persIcon,
+                                "__!isspeak!__"   : "false"
+                            });
+                        }
+                    }
+                    // show all sprites of talking personages
+                    else {
+                        tplComicsPersesArr.push(strComicsPers);
+                    }
 
                     // reactions for others personages
-                    if (isComicsReactionsOn && talk.pers != talkingPers.name && JSONGenerator.defaults["comics.animation." + talkingPers.name]) {
+                    if (isComicsReactionsOn && !isComicsOnlyIdles && !isActivePers && JSONGenerator.defaults["comics.animation." + talkingPers.name]) {
                         strReactionsArr.push(replaces(TPL_COMICS_ANIM_REACTION, {
                             "__!tpl:pers!__" : talkingPers.name,
                             "__!tpl:anim!__" : JSONGenerator.defaults["comics.animation." + talkingPers.name].value,
                             "__!tpl:wait!__" : Number(1.0 + (0.5 * strReactionsArr.length)).toFixed(1)
                         }));
                     }
+                }
+
+                // remove empty trailing items
+                while (!tplComicsPersesArr[0] && tplComicsPersesArr.length > 0) {
+                    tplComicsPersesArr.shift();
                 }
 
                 let template = (isComicsAnimationsOn ? (isComicsReactionsOn ? TPL_COMICS_EX_REACTS : TPL_COMICS_EX) : TPL_COMICS);

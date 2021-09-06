@@ -53,27 +53,32 @@ class UIDefaults
             "talk.animation.main" : {
                 "descr": "Анимация-заглушка в баблах (talk) для main",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "talk.animation.sarah" : {
                 "descr": "Анимация-заглушка в баблах (talk) для sarah",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "talk.animation.jimmy" : {
                 "descr": "Анимация-заглушка в баблах (talk) для jimmy",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "talk.animation.ellie" : {
                 "descr": "Анимация-заглушка в баблах (talk) для ellie",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "talk.animation.tony" : {
                 "descr": "Анимация-заглушка в баблах (talk) для tony",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animations" : {
                 "descr": "Вставлять заглушки анимаций 'через talk' в комиксы",
@@ -83,35 +88,55 @@ class UIDefaults
             "comics.animation.main" : {
                 "descr": "Анимация 'через talk' в комиксы для main",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animation.sarah" : {
                 "descr": "Анимация 'через talk' в комиксы для sarah",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animation.jimmy" : {
                 "descr": "Анимация 'через talk' в комиксы для jimmy",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animation.ellie" : {
                 "descr": "Анимация 'через talk' в комиксы для ellie",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animation.tony" : {
                 "descr": "Анимация 'через talk' в комиксы для tony",
                 "type": "string",
-                "textValue": "idea"
+                "textValue": "idea",
+                "tabIndent": 1
             },
             "comics.animation.reactions" : {
-                "descr": "(new) Реакция остальных на talk",
+                "descr": "Реакция остальных на talk",
+                "type": "bool",
+                "textValue": "1"
+            },
+            "comics.animation.onlyidle" : {
+                "descr": "(new) В комиксах только idle/talk без каких-либо анимаций и реакций",
+                "type": "bool",
+                "textValue": "1"
+            },
+            "comics.sprites.minimalize.ifgreater3" : {
+                "descr": "(new) В комиксах, где больше 3 говорящих, показывать только последних двух",
+                "type": "bool",
+                "textValue": "1"
+            },
+            "comics.sprites.minimalize.ifgreater2" : {
+                "descr": "(new) В комиксах, где больше 2 говорящих, показывать только последних двух",
                 "type": "bool",
                 "textValue": "1"
             },
             "comics.animation.addtalkcomments" : {
-                "descr": "(new) Добавить в конец строки коммент с названиями анимаций (talk, talksit, ...)",
+                "descr": "Добавить в конец строки коммент с названиями анимаций (talk, talksit, ...)",
                 "type": "bool",
                 "textValue": "1"
             },
@@ -181,7 +206,10 @@ class UIDefaults
         }
         if (json) {
             for (let k in json) {
-                UIDefaults.data[k] = json[k];
+                if (UIDefaults.data[k]) {
+                    if ("value" in json[k])     UIDefaults.data[k]["value"]     = json[k]["value"];
+                    if ("textValue" in json[k]) UIDefaults.data[k]["textValue"] = json[k]["textValue"];
+                }
             }
         }
 
@@ -197,6 +225,9 @@ class UIDefaults
             let domText = $('<input class="defaultSetting" />');
 
             domTdDesc.text(setting.descr);
+            if (setting.tabIndent) {
+                domTdDesc.css("padding-left", (parseInt(setting.tabIndent) * 30) + "px");
+            }
 
             domText.attr("shu-defsetting", key);
 
