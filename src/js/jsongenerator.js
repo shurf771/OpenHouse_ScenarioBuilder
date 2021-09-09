@@ -386,6 +386,7 @@ class JSONGenerator
         let lastTalker = null;
         let lastSprites = [null, null]; // [left, right]
         let lastComicsActivePersStr = null;
+        let prevTplComicsPersesArr = null;
         let isTalkAnimationsOn = JSONGenerator.defaults["talk.animations"].value;
         let isTalkMustAAnimationsOn = JSONGenerator.defaults["talk.animations.must-a"].value;
         let isComicsAnimationsOn = JSONGenerator.defaults["comics.animations"].value;
@@ -442,28 +443,35 @@ class JSONGenerator
                     // show only 2 sprites
                     if (isMinimalizeComicsSprites) {
                         if (isActivePers) {
-                            if (lastTalker) {
-                                if (lastTalker == lastSprites[0]) {
-                                    tplComicsPersesArr[0] = lastComicsActivePersStr;
-                                    tplComicsPersesArr[1] = strComicsPers;
-                                    lastSprites[1]        = talkingPers.name;
-                                }
-                                if (lastTalker == lastSprites[1]) {
-                                    tplComicsPersesArr[1] = lastComicsActivePersStr;
-                                    tplComicsPersesArr[0] = strComicsPers;
-                                    lastSprites[0]        = talkingPers.name;
-                                }
+                            if (talk.pers == lastTalker && prevTplComicsPersesArr) // the same speaker 2 times in row
+                            {
+                                tplComicsPersesArr = prevTplComicsPersesArr.concat();
                             }
-                            else {
-                                tplComicsPersesArr.push(strComicsPers);
-                                lastSprites[0] = talkingPers.name;
-                            }
+                            else
+                            {
+                                if (lastTalker) {
+                                    if (lastTalker == lastSprites[0]) {
+                                        tplComicsPersesArr[0] = lastComicsActivePersStr;
+                                        tplComicsPersesArr[1] = strComicsPers;
+                                        lastSprites[1]        = talkingPers.name;
+                                    }
+                                    if (lastTalker == lastSprites[1]) {
+                                        tplComicsPersesArr[1] = lastComicsActivePersStr;
+                                        tplComicsPersesArr[0] = strComicsPers;
+                                        lastSprites[0]        = talkingPers.name;
+                                    }
+                                }
+                                else {
+                                    tplComicsPersesArr.push(strComicsPers);
+                                    lastSprites[0] = talkingPers.name;
+                                }
 
-                            lastComicsActivePersStr = replaces(TPL_COMICS_PERS, {
-                                "__!pers!__"      : talkingPers.name,
-                                "__!pers:icon!__" : persIcon,
-                                "__!isspeak!__"   : "false"
-                            });
+                                lastComicsActivePersStr = replaces(TPL_COMICS_PERS, {
+                                    "__!pers!__"      : talkingPers.name,
+                                    "__!pers:icon!__" : persIcon,
+                                    "__!isspeak!__"   : "false"
+                                });
+                            }
                         }
                     }
                     // show all sprites of talking personages
@@ -485,6 +493,7 @@ class JSONGenerator
                 while (!tplComicsPersesArr[0] && tplComicsPersesArr.length > 0) {
                     tplComicsPersesArr.shift();
                 }
+                prevTplComicsPersesArr = tplComicsPersesArr;
 
                 let template = (isComicsAnimationsOn ? (isComicsReactionsOn ? TPL_COMICS_EX_REACTS : TPL_COMICS_EX) : TPL_COMICS);
                 let strComicsAnimsArr = [];
