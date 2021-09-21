@@ -396,7 +396,8 @@ class JSONGenerator
         let idleTalkTabs = 2;
         let isMinimalizeComicsSpritesIfGt2 = JSONGenerator.defaults["comics.sprites.minimalize.ifgreater2"].value;
         let isMinimalizeComicsSpritesIfGt3 = JSONGenerator.defaults["comics.sprites.minimalize.ifgreater3"].value;
-        let isMinimalizeComicsSprites = ((talkingPersonages.length > 2 && isMinimalizeComicsSpritesIfGt2) || (talkingPersonages.length > 3 && isMinimalizeComicsSpritesIfGt3));
+        let isMinimalizeComicsSprites = talkingPersonages &&
+            ((talkingPersonages.length > 2 && isMinimalizeComicsSpritesIfGt2) || (talkingPersonages.length > 3 && isMinimalizeComicsSpritesIfGt3));
 
         if (isComicsReactionsOn) idleTalkTabs = 1;
         
