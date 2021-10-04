@@ -89,6 +89,9 @@ function step1LoadSpreadsheets(useCache)
 
     if (!useCache || state.cacheFilesExist < spreadSheets.length)
     {
+        if (state.cacheFilesExist > 0) {
+            nw.App.clearCache();
+        }
         spreadSheets.forEach((spreadSheet) => {
             Loader.downloadFile(mapFiles[spreadSheet.textInput], spreadSheet.cacheFile, step1LoadSpreadsheets_complete);
         });

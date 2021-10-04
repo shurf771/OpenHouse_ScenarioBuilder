@@ -317,6 +317,11 @@ class JSONGenerator
                 strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
                     "__!action!__"     : "add_idle_scenario",
                     "__!scenario!__"   : "quest." + quest.id + ".completed",
+                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
+                });
+                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                    "__!action!__"     : "add_idle_scenario",
+                    "__!scenario!__"   : "quest." + quest.id + ".completed",
                     "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
                 });
                 strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {

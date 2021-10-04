@@ -29,6 +29,19 @@
         text-align: left;
     }
 
+    h2 small {
+      font-size: 0.5em;
+      cursor: pointer;
+    }
+    h2 small:hover {
+      color: #6c98bd; 
+    }
+
+    #logPathTools {
+      font-size: 0.75em;
+      margin-top: 10px;
+    }
+
     #divOutput {
       background-color: #dbefdc;
       min-height:300px;
@@ -109,7 +122,8 @@
   
     var fs = require('fs');
 
-    const LOG_PATH        = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
+    const LOG_PATH_DEFAULT = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
+    var   LOG_PATH         = LOG_PATH_DEFAULT;
 
     var COOLDOWN_REGEN_MS     = 500;
     var SCAN_FILE_EACH_TICK   = true;
@@ -118,9 +132,16 @@
     var isRegeneratingPlaned  = false;
     var reloadTime            = 0;
     var curText               = null;
+    var isPause               = false;
+    var settings              = {};
 
     
     $(document).ready(function(){
+        storageLoadSave(false);
+        if (settings.logPath) {
+          LOG_PATH = settings.logPath;
+        }
+        changeLogPath(null);
         onReady();
         checkAutoLoadFile();
         //watch();
@@ -142,15 +163,57 @@
         }
     });
 
-    function watch() {
-      var watchPath = LOG_PATH;
 
-      console.log('start watching, watchPath = ' + watchPath);
-      fs.watch(watchPath, (eventType, filename) => {
-        console.log(eventType, filename);
-        checkAutoLoadFile();
-      });
+    function storageLoadSave(isSave) {
+      if (isSave) {
+        localStorage.setItem("ohHelperSettings", JSON.stringify(settings));
+      } else {
+        try {
+          var newSettings = localStorage.getItem("ohHelperSettings");
+          newSettings = JSON.parse(newSettings);
+          if (newSettings) {
+            settings = newSettings;
+          }
+        } catch (err) {}
+      }
     }
+
+
+    function changeLogPath(newLogPath)
+    {
+      if (!settings.logPaths) {
+        settings.logPaths = [ LOG_PATH_DEFAULT ];
+      }
+
+      if (newLogPath && LOG_PATH != newLogPath) {
+        LOG_PATH = newLogPath;
+        settings.logPath = LOG_PATH;
+        var exist = false;
+        for (let i=0; i<settings.logPaths.length; i++) {
+          if (settings.logPaths[i] == LOG_PATH) {
+            exist = true;
+            break;
+          }
+        }
+        if (!exist) {
+          settings.logPaths.push(LOG_PATH);
+        }
+        storageLoadSave(true);
+      }
+
+      $("#logPath").text( LOG_PATH );
+    }
+
+
+    // function watch() {
+    //   var watchPath = LOG_PATH;
+
+    //   console.log('start watching, watchPath = ' + watchPath);
+    //   fs.watch(watchPath, (eventType, filename) => {
+    //     console.log(eventType, filename);
+    //     checkAutoLoadFile();
+    //   });
+    // }
     
     function checkAutoLoadFile(){
         // nwjs can read directly from FS!
@@ -207,6 +270,10 @@
       $("#txtInput").change(txtInput_change);
 
       $("#cmdCopyAll").click(cmdCopyAll_click);
+      $("#cmdPause").click(cmdPause_click);
+
+      $("#logPath").click(logPath_click);
+      $("#cmbPaths").change(cmbPaths_change);
 
       setInterval(cooldownInterval, COOLDOWN_REGEN_MS/2);
     }
@@ -223,6 +290,10 @@
     }
 
     function cooldownInterval() {
+        if (isPause) {
+          return;
+        }
+
         if (SCAN_FILE_EACH_TICK) {
           checkAutoLoadFile();
         }
@@ -245,6 +316,31 @@
       inputDataIsChanged();
       viewReGenerateIsPlaned(true);
       isRegeneratingPlaned = true;
+    }
+
+    function logPath_click() {
+      var isVisible = $("#logPathTools").toggle().is(":visible");
+      if (isVisible)
+      {
+        var combobox = $("#cmbPaths");
+        combobox.empty();
+        combobox.append( $("<option />").text(LOG_PATH) );
+        for (var i=0; i<settings.logPaths.length; i++) {
+          if (LOG_PATH != settings.logPaths[i]) {
+            combobox.append( $("<option />").text(settings.logPaths[i]) );
+          }
+        }
+        combobox.append( $("<option />").text("enter a new path...") );
+      }
+    }
+
+    function cmbPaths_change() {
+      var val = $("#cmbPaths").val();
+      if (val == "enter a new path...") {
+        val = prompt(val);
+      }
+      $("#logPathTools").hide();
+      changeLogPath(val);
     }
 
     const GROUPS_RU = {
@@ -608,6 +704,16 @@
       copyTextToClipboard(strAllLines);
     }
 
+    
+    function cmdPause_click(e) {
+      isPause = !isPause;
+      if (isPause) {
+        $("#cmdPause").removeClass("bg-blue").addClass("bg-red").text("resume");
+      } else {
+        $("#cmdPause").addClass("bg-blue").removeClass("bg-red").text("pause");
+      }
+    }
+
 
     function addOutputItem(str, indx, extraClass) 
     {
@@ -713,6 +819,11 @@
 <body>
     <h2>
         OH scenario helper
+        <button id="cmdPause" class="xs bg-blue">pause</button><br />
+        <small id="logPath"></small>
+        <div id="logPathTools" style="display:none;">
+          <select id="cmbPaths"></select>
+        </div>
     </h2>
 
     
