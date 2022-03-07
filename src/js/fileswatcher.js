@@ -70,6 +70,12 @@ class FilesWatcher
         let binDir = path.resolve(DataReader._baseDir, '..');
         binDir = path.resolve(binDir, 'bin/osx/m3.app/Contents/Resources/data');
 
+        // windows ?
+        if (!Loader.getFileExistSync(binDir)) {
+            binDir = path.resolve(DataReader._baseDir, '..');
+            binDir = path.resolve(binDir, `bin\\windows\\data`);
+        }
+
         for (let i=0; i < FilesWatcher._dirs.length; i++)
         {
             let dirCfg  = FilesWatcher._dirs[i];
