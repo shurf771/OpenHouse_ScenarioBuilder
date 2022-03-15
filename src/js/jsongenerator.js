@@ -78,6 +78,8 @@ class JSONGenerator
 
     static _generateQuest(quest, nextQuestId)
     {
+        const noMastA = JSONGenerator.defaults["generate.no_must_a"].value;
+
         // header (only for ui, has no json code)
         JSONGenerator.addBlock( "", BlockTypes.HEADER, {
             id : quest.id,
@@ -262,7 +264,9 @@ class JSONGenerator
         // add_idle_scenario lines
         let strAddIdles = "";
         if (!quest.coParents || quest.coParents.length == 1) {
-            strAddIdles = replaces(TPL_MUSTA_SIMPLE, {"__!quest:id!__" : quest.id});
+            if (!noMastA) {
+                strAddIdles = replaces(TPL_MUSTA_SIMPLE, {"__!quest:id!__" : quest.id});
+            }
         } 
         else {
             let otherCoParentsIds = [];
@@ -280,11 +284,13 @@ class JSONGenerator
                     "__!scenario!__"   : "quest." + strSceneAfterId,
                     "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true }), 1)
                 });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false }), 1)
-                });
+                if (!noMastA) {
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false }), 1)
+                    });
+                }
             }
             else if (otherCoParentsIds.length == 2) {
                 strAddIdles += replaces(TPL_START_SCENARIO_OR_IDLE, {
@@ -292,21 +298,23 @@ class JSONGenerator
                     "__!scenario!__"   : "quest." + strSceneAfterId,
                     "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: true }), 1)
                 });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true }), 1)
-                });
+                if (!noMastA) {
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true }), 1)
+                    });
+                }
             }
             else if (otherCoParentsIds.length == 3) {
                 strAddIdles += replaces(TPL_START_SCENARIO_OR_IDLE, {
@@ -314,41 +322,43 @@ class JSONGenerator
                     "__!scenario!__"   : "quest." + strSceneAfterId,
                     "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: true }), 1)
                 });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: true }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: true }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: false }), 1)
-                });
-                strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
-                    "__!action!__"     : "add_idle_scenario",
-                    "__!scenario!__"   : "quest." + quest.id + ".completed",
-                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: true }), 1)
-                });
+                if (!noMastA) {
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: true }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: true }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: false }), 1)
+                    });
+                    strAddIdles += "\n" + replaces(TPL_START_SCENARIO_OR_IDLE, {
+                        "__!action!__"     : "add_idle_scenario",
+                        "__!scenario!__"   : "quest." + quest.id + ".completed",
+                        "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: true }), 1)
+                    });
+                }
             }
             else {
                 UI.alertError("Can't handle add_idle_scenario for quest " + quest.id + ", check scene " + strSceneAfterId + " manually");
@@ -363,7 +373,7 @@ class JSONGenerator
             "__!must:a!__"    : tabs( strMustA.join(",\n") , 2 )
         };
 
-        let txtEndQuest = replaces(TPL_QUEST_FINISH, replacesParams);
+        let txtEndQuest = replaces((noMastA ? TPL_QUEST_FINISH_NO_MUSTA : TPL_QUEST_FINISH), replacesParams);
         txtEndQuest = tabs(txtEndQuest, 1);
         JSONGenerator.addBlock( txtEndQuest, BlockTypes.TEXT );
     }
@@ -760,6 +770,17 @@ __!add_idles!__
     "type": "quest_idle",
     "actions": [
 __!must:a!__
+    ]
+},
+`;
+
+const TPL_QUEST_FINISH_NO_MUSTA = `
+__!talks!__
+        // { "action": "wait_seconds", "seconds": 9999 },
+
+__!add_idles!__
+
+        { "action": "unlock_scene" }
     ]
 },
 `;

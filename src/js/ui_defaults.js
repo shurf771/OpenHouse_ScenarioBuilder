@@ -144,6 +144,11 @@ class UIDefaults
                 "descr": "Всегда генерировать в шапке этих персов",
                 "type": "string",
                 "textValue": "main,sarah,jimmy,ellie,tony"
+            },
+            "generate.no_must_a" : {
+                "descr": "Не генерировать 'Маст-А'",
+                "type": "bool",
+                "textValue": "0"
             }
         };
 

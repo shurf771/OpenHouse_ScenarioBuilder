@@ -111,8 +111,12 @@ class XLSXReader
                 sheet = state.m3localization.Sheets["D1"];
             }
             if (!sheet) {
-                UI.alertError(`can't find sheet '${state.curDayTitle}' in m3:localization`);
-                return;
+                let alternativeName = "D" + state.curDayTitle.replace(/.+(\d+)/, "$1");
+                sheet = state.m3localization.Sheets[alternativeName];
+                if (!sheet) {
+                    UI.alertError(`can't find sheet '${state.curDayTitle}' (or even '${alternativeName}') in m3:localization`);
+                    return;
+                }
             }
             state.jsons.jsonLocalization = XLSX.utils.sheet_to_json( sheet, {"header": 1} );
         }
