@@ -94,6 +94,10 @@
       background: #ffd1d1 !important;
     }
 
+    .move_widgets {
+      background: #e0d1ff !important;
+    }
+
     .old {
       background: #dfdfdf !important;
     }
@@ -122,6 +126,7 @@
   
     var fs = require('fs');
 
+    // windows sample path: C:\Users\s???f\AppData\M3\curr_log.txt
     const LOG_PATH_DEFAULT = "/Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt";
     var   LOG_PATH         = LOG_PATH_DEFAULT;
 
@@ -355,6 +360,7 @@
       'change_world_object_state': [ "change_world_object_state" ],
       'error': [ "Errors" ],
       'copy_level_json': [ "Level JSON", "Level JSON" ],
+      'move_widgets': [ "[move_widgets]" ],
     };
 
     var RESULTS = {};
@@ -495,6 +501,31 @@
         replace: [
           '',
           '$1'
+        ]
+      },
+
+      // widgets moving
+      "move_widgets_pick": {
+        order: 300,
+        extraClass: "move_widgets",
+        key: "move_widgets_pick",
+        group: 'move_widgets',
+        prePattern: "[move_widgets] picked",
+        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)" ; visible = "(\w+)"\].*$/,
+        replace: [
+          '($1/$2) `$3` - $4 - "$5 $6 $7 $8"'
+        ]
+      },
+      "move_widgets_transorm": {
+        order: 310,
+        extraClass: "move_widgets",
+        key: "move_widgets_transorm",
+        group: 'move_widgets',
+        prePattern: "[move_widgets] transform",
+        pattern: /^.+\[move_widgets\] transform `(\w*)` : "([-\d\.]+) ([-\d\.]+) ([-\d\.]+) ([-\d\.]+)".*$/,
+        replace: [
+          '$1',
+          '"$2 $3 $4 $5"'
         ]
       }
     };
