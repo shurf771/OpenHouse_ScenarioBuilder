@@ -160,6 +160,7 @@
     });
 
     $(window).on('focus', function(){
+        if (isPause) return;
         console.log('document activate, isRegeneratingPlaned = ' + isRegeneratingPlaned);
         if (!isRegeneratingPlaned)
         {
@@ -513,7 +514,20 @@
         prePattern: "[move_widgets] picked",
         pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)" ; visible = "(\w+)"\].*$/,
         replace: [
-          '($1/$2) `$3` - $4 - "$5 $6 $7 $8"'
+          '($1/$2) `$3` - $4 - "$5 $6 $7 $8"',
+          ''
+        ]
+      },
+      "move_widgets_pick_2": {
+        order: 301,
+        extraClass: "move_widgets",
+        key: "move_widgets_pick",
+        group: 'move_widgets',
+        prePattern: "[move_widgets] picked",
+        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; caption = "([^"]*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)" ; visible = "(\w+)"\].*$/,
+        replace: [
+          '($1/$2) `$3` - $4 - "$6 $7 $8 $9"',
+          '$5'
         ]
       },
       "move_widgets_transorm": {
@@ -613,6 +627,11 @@
                 results2[key] = resultLine; // depricated
 
                 RESULTS[key]["text_2"] = resultLine;
+              }
+              else {
+                if (RESULTS[key]["text_2"]) {
+                  RESULTS[key]["text_2"] = null;
+                }
               }
             }
           }
