@@ -512,7 +512,7 @@
         key: "move_widgets_pick",
         group: 'move_widgets',
         prePattern: "[move_widgets] picked",
-        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)" ; visible = "(\w+)"\].*$/,
+        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)".*$/,
         replace: [
           '($1/$2) `$3` - $4 - "$5 $6 $7 $8"',
           ''
@@ -524,7 +524,7 @@
         key: "move_widgets_pick",
         group: 'move_widgets',
         prePattern: "[move_widgets] picked",
-        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; caption = "([^"]*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)" ; visible = "(\w+)"\].*$/,
+        pattern: /^.+\[move_widgets\]\spicked (\d+) of (\d+) `(\w*)`\s+-\s+\[getType\(\) = "(\w*)" ; caption = "([^"]*)" ; left = "([-\d\.]+)" ; top = "([-\d\.]+)" ; width = "([-\d\.]+)" ; height = "([-\d\.]+)".*$/,
         replace: [
           '($1/$2) `$3` - $4 - "$6 $7 $8 $9"',
           '$5'
