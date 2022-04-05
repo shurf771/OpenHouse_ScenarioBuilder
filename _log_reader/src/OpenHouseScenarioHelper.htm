@@ -6,7 +6,10 @@
 
   <link rel="stylesheet" href="css/papier-1.3.0.min.css">
   <link rel="stylesheet" href="css/ifuckingknowcss.css">
+  <link rel="stylesheet" href="css/full_log_reader.css">
   <script src="lib/vend/jquery-3.3.1.min.js"></script>
+  <script src="lib/full_log_reader.js"></script>
+  <script src="lib/div_sections.js"></script>
 
   <style>
     html {
@@ -23,7 +26,7 @@
         color: #7cacd3;
     }
     h4, h3 {
-        margin-top: 30px;
+        margin-top: 20px;
     }
     .tdWas pre, .tdBecame pre {
         text-align: left;
@@ -119,6 +122,22 @@
       color: rgb(9, 140, 248)
     }
 
+    #lblDateModify {
+      font-size: 70%;
+    }
+
+    #divPickSection {
+      font-size: 70%;
+      text-align: center;
+      color: #407195;
+    }
+
+    #divPickSection a {
+      color: #4385b4;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
   </style>
 
 
@@ -132,6 +151,8 @@
 
     var COOLDOWN_REGEN_MS     = 500;
     var SCAN_FILE_EACH_TICK   = true;
+    var SCAN_WHEN_FILE_TIME_DIFFER = true;
+
     var lastKeyActivity       = 0;
     var strAllLines           = "";
     var isRegeneratingPlaned  = false;
@@ -139,6 +160,9 @@
     var curText               = null;
     var isPause               = false;
     var settings              = {};
+    var logFileAttrs          = null;
+    var divSections           = null; // DivSections();
+    var curSectionModel       = null;
 
     
     $(document).ready(function(){
@@ -221,22 +245,56 @@
     //   });
     // }
     
-    function checkAutoLoadFile(){
+    function checkAutoLoadFile(forceReload) {
         // nwjs can read directly from FS!
         if (true)
         {
           var path = LOG_PATH;
           let str = null;
+
+          if (SCAN_WHEN_FILE_TIME_DIFFER)
+          {
+            try {
+                let stats = fs.statSync(path);
+                if (!logFileAttrs) {
+                  logFileAttrs = {
+                    changed: true,
+                    stats: stats
+                  }
+                } 
+                else {
+                  if (logFileAttrs.stats.mtimeMs != stats.mtimeMs || logFileAttrs.stats.ctimeMs != stats.ctimeMs) {
+                    logFileAttrs.changed = true;
+                    logFileAttrs.stats = stats;
+                  }
+                }
+
+                if (!logFileAttrs.changed && !forceReload) {
+                  return;
+                }
+            } 
+            catch (err) {
+                console.log("ERROR reading file modification time: ", err);
+            }
+          }
+
+          if (curSectionModel) {
+            if (!curSectionModel.checkAutoLoadFile(forceReload)) {
+              return;
+            }
+          }
+
           try {
               let buf = fs.readFileSync(path);
               str = buf.toString();
-              updateTextIfNeeds(str);
+              updateTextIfNeeds(str, forceReload);
           } 
           catch (err) {
               console.log("loadText ERROR reading file: ", err);
           }
         }
-        else 
+
+        else // [DEPRICATED] for web version via Charles 
         {
           // read current log
           // /Users/user/Library/Application Support/com.integragames.openhouse.osx/curr_log.txt
@@ -253,8 +311,11 @@
         }
     }
 
-    function updateTextIfNeeds(newText) {
-      if (curText != newText) {
+    function updateTextIfNeeds(newText, forceReload) {
+      if (SCAN_WHEN_FILE_TIME_DIFFER 
+          || forceReload 
+          || curText != newText)
+      {
         curText = newText;
         isRegeneratingPlaned = true;
         viewReGenerateIsPlaned(true);
@@ -277,11 +338,32 @@
 
       $("#cmdCopyAll").click(cmdCopyAll_click);
       $("#cmdPause").click(cmdPause_click);
+      $("#cmdReload").click(cmdReload_click);
 
       $("#logPath").click(logPath_click);
       $("#cmbPaths").change(cmbPaths_change);
 
       setInterval(cooldownInterval, COOLDOWN_REGEN_MS/2);
+
+      divSections = new DivSections();
+      divSections.start({
+        sections: [
+          { name: "default",  model: null },
+          { name: "full_log", model: new FullLogReader() }
+        ],
+        curSectionName: settings.curSection || "default",
+        onChangeSection: function(newSection) {
+          if (curSectionModel) {
+            curSectionModel.destroy();
+          }
+          settings.curSection = newSection.name;
+          curSection = newSection;
+          curSectionModel = curSection.model;
+          storageLoadSave(true);
+        }
+      });
+      curSection      = divSections.curSection;
+      curSectionModel = curSection.model;
     }
 
 
@@ -310,6 +392,13 @@
             var diff = ((new Date()).getTime() - reloadTime) / 1000;
             diff = Math.floor(diff * 10) / 10;
             document.getElementById("lblTimer").innerText = diff;
+        }
+        if (logFileAttrs && logFileAttrs.changed) {
+            logFileAttrs.changed = false;
+            let mtime = logFileAttrs.stats.mtime.toLocaleDateString() + " " + logFileAttrs.stats.mtime.toLocaleTimeString();
+            let ctime = logFileAttrs.stats.ctime.toLocaleDateString() + " " + logFileAttrs.stats.ctime.toLocaleTimeString();
+            let str = `ctime: ${ctime} |  mtime: ${mtime}`;
+            document.getElementById("lblDateModify").innerText = str;
         }
     }
     
@@ -558,96 +647,105 @@
 
     function runParse() 
     {
-      console.log("parsing...");
+      let doDefaultParse = true;
 
-      RESULTS_ARR = [];
-      RESULTS = {};
+      if (curSectionModel) {
+        doDefaultParse = curSectionModel.runParse();
+      }
 
-      var raw       = $("#txtInput").val();
-      var lines     = raw.split("\n");
-      var results   = {};
-      var results2  = {};
-
-
-      for (var i=0; i<lines.length; i++)
+      if (doDefaultParse)
       {
-        var _line = lines[i];
+        console.log("parsing...");
 
-        for (var actionName in CFG) 
+        RESULTS_ARR = [];
+        RESULTS = {};
+
+        var raw       = $("#txtInput").val();
+        var lines     = raw.split("\n");
+        var results   = {};
+        var results2  = {};
+
+
+        for (var i=0; i<lines.length; i++)
         {
-          var pattern     = CFG[actionName].pattern;
-          var prePattern  = CFG[actionName].prePattern;
-          var replaces    = CFG[actionName].replace;
-          var replace     = replaces[0];
-          var key         = CFG[actionName].key;
-          var nlines      = CFG[actionName].lines;
-          var line        = _line;
+          var _line = lines[i];
 
-          if (nlines && nlines > 1) {
-            for (let l=0; l<nlines-1; l++) {
-              line += "\n" + lines[i+1+l];
-            }
-          }
-
-          if (!prePattern || line.indexOf(prePattern) !== -1)
+          for (var actionName in CFG) 
           {
-            if (pattern.test(line)) 
+            var pattern     = CFG[actionName].pattern;
+            var prePattern  = CFG[actionName].prePattern;
+            var replaces    = CFG[actionName].replace;
+            var replace     = replaces[0];
+            var key         = CFG[actionName].key;
+            var nlines      = CFG[actionName].lines;
+            var line        = _line;
+
+            if (nlines && nlines > 1) {
+              for (let l=0; l<nlines-1; l++) {
+                line += "\n" + lines[i+1+l];
+              }
+            }
+
+            if (!prePattern || line.indexOf(prePattern) !== -1)
             {
-              key = line.replace(pattern, key);
-              var resultLine = line.replace(pattern, replace);
-              if (CFG[actionName].func_postprocess) {
-                var func_postprocess_name = CFG[actionName].func_postprocess;
-                resultLine = (window || this)[func_postprocess_name](resultLine);
-              }
-              results[key] = resultLine; // depricated
-
-              if (RESULTS[key]) {
-                RESULTS[key]["text_1"] = resultLine;
-              } 
-              else {
-                RESULTS[key] = {
-                  "i"          : i,
-                  "order"      : CFG[actionName].order,
-                  "extraClass" : CFG[actionName].extraClass,
-                  "group"      : CFG[actionName].group,
-                  "text_1"     : resultLine,
-                  "text_2"     : null
-                }
-                RESULTS_ARR.push( RESULTS[key] );
-              }
-
-              // alternative replace
-              if (replaces[1]) {
-                replace = replaces[1];
-                resultLine = line.replace(pattern, replace);
+              if (pattern.test(line)) 
+              {
+                key = line.replace(pattern, key);
+                var resultLine = line.replace(pattern, replace);
                 if (CFG[actionName].func_postprocess) {
                   var func_postprocess_name = CFG[actionName].func_postprocess;
                   resultLine = (window || this)[func_postprocess_name](resultLine);
                 }
-                results2[key] = resultLine; // depricated
+                results[key] = resultLine; // depricated
 
-                RESULTS[key]["text_2"] = resultLine;
-              }
-              else {
-                if (RESULTS[key]["text_2"]) {
-                  RESULTS[key]["text_2"] = null;
+                if (RESULTS[key]) {
+                  RESULTS[key]["text_1"] = resultLine;
+                } 
+                else {
+                  RESULTS[key] = {
+                    "i"          : i,
+                    "order"      : CFG[actionName].order,
+                    "extraClass" : CFG[actionName].extraClass,
+                    "group"      : CFG[actionName].group,
+                    "text_1"     : resultLine,
+                    "text_2"     : null
+                  }
+                  RESULTS_ARR.push( RESULTS[key] );
+                }
+
+                // alternative replace
+                if (replaces[1]) {
+                  replace = replaces[1];
+                  resultLine = line.replace(pattern, replace);
+                  if (CFG[actionName].func_postprocess) {
+                    var func_postprocess_name = CFG[actionName].func_postprocess;
+                    resultLine = (window || this)[func_postprocess_name](resultLine);
+                  }
+                  results2[key] = resultLine; // depricated
+
+                  RESULTS[key]["text_2"] = resultLine;
+                }
+                else {
+                  if (RESULTS[key]["text_2"]) {
+                    RESULTS[key]["text_2"] = null;
+                  }
                 }
               }
             }
           }
         }
+
+        //console.log(results, results2);
+        //console.log(RESULTS, RESULTS_ARR);
+
+        RESULTS_ARR.sort((a,b) => {
+          return a.order - b.order;
+        });
+
+        // console.log(RESULTS_ARR);
+
+        redrawResults();
       }
-
-      //console.log(results, results2);
-      //console.log(RESULTS, RESULTS_ARR);
-
-      RESULTS_ARR.sort((a,b) => {
-        return a.order - b.order;
-      });
-
-      console.log(RESULTS_ARR);
-
-      redrawResults();
       
       inputDataIsChanged(true);
       viewReGenerateIsPlaned(false);
@@ -764,6 +862,11 @@
       }
     }
 
+    
+    function cmdReload_click(e) {
+      checkAutoLoadFile(true); // forceReload
+    }
+
 
     function addOutputItem(str, indx, extraClass) 
     {
@@ -878,19 +981,40 @@
 
     
     <div id="divroot">
+
+        <div id="divPickSection">
+          ...
+        </div>
     
         <!-----------------  RESULT json code  ----------------->
         <h3 class="alrt_green"><span class="emoji">&#x2705;</span> Result <small>:: scenario actions JSON</small>
-          | <small id="lblTimer">...</small></h3>
-        <div style="margin-top:5px;"  class="txtAreaInOut" id="divOutput"></div>
+          | <button id="cmdReload" class="xs bg-teal">reload</button>
+          | <small id="lblDateModify">...</small>
+          | <small id="lblTimer">...</small>
+        </h3>
 
-        <!-----------------  clipboard  ----------------->
-        <h4><span class="emoji">&#x2198;</span> Clipboard <small id="cmdCopyAll">(copy all)</small></h4>
-        <div id="txtClipboard"></div>
+        <!-- section 0: default -->
+        <div class="divsection" shu-section="default">
+          <div style="margin-top:5px;"  class="txtAreaInOut" id="divOutput"></div>
 
-        <!-----------------  input 1 :  google doc  ----------------->
-        <h4 shu-toggle="#txtInput"><span class="emoji">&#x2198;</span> Input <small>:: CopyPaste from Debug Console (click me to expand)</small></h4>
-        <textarea class="txtAreaInOut" id="txtInput" style="display: none;"></textarea>
+          <!-----------------  clipboard  ----------------->
+          <h4><span class="emoji">&#x2198;</span> Clipboard <small id="cmdCopyAll">(copy all)</small></h4>
+          <div id="txtClipboard"></div>
+
+          <!-----------------  input 1 :  google doc  ----------------->
+          <h4 shu-toggle="#txtInput"><span class="emoji">&#x2198;</span> Input <small>:: CopyPaste from Debug Console (click me to expand)</small></h4>
+          <textarea class="txtAreaInOut" id="txtInput" style="display: none;"></textarea>
+        </div>
+
+        <!-- section 1: full_log -->
+        <div class="divsection" shu-section="full_log">
+          <div id="full_log_tags"></div>
+          <div class="row">
+            <div class="col-8" id="full_log_body">...</div>
+            <div class="col-4" id="full_log_bookmarks">...</div>
+          </div>
+        </div>
+
         
     </div>
     

@@ -1,0 +1,77 @@
+#full_log_tags {
+    border-bottom: 1px solid #ababab;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+
+#full_log_tags button {
+    margin-right: 3px;
+}
+
+#full_log_body {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 12px;
+    color: #8d8d8d;
+}
+
+#full_log_body .linenum {
+    color: #ffffff;
+    background: #464646;
+    width: 50px;
+    text-align: right;
+    display: inline-block;
+    padding-right: 5px;
+    margin-right: 5px;
+}
+
+#full_log_body .warn {
+    color: #d37603;
+}
+
+#full_log_body .debug {
+    color: #404040;
+}
+
+#full_log_body .err {
+    color: #ff0000;
+}
+
+#full_log_bookmarks {
+    background: #d1dbe3;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 10px;
+    color: #474747;
+    overflow-y: scroll;
+}
+
+.fixed_bookmarks {
+    position: fixed;
+    right: 5px;
+    top: 5px;
+    bottom: 5px;
+}
+
+#full_log_bookmarks span {
+    cursor: pointer;
+    color: #474747;
+}
+
+#full_log_bookmarks span:hover {
+    cursor: pointer;
+    color: #000000;
+}
+
+#full_log_bookmarks span .linenum {
+    background: #868686;
+    padding: 0 3px;
+    margin: 0 2px 0 0;
+    color: #fff;
+}
+
+.curline {
+    background: #4d755f !important;
+    color: #85ff00 !important;
+}
