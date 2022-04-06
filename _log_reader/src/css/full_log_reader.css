@@ -26,18 +26,6 @@
     margin-right: 5px;
 }
 
-#full_log_body .warn {
-    color: #d37603;
-}
-
-#full_log_body .debug {
-    color: #404040;
-}
-
-#full_log_body .err {
-    color: #ff0000;
-}
-
 #full_log_bookmarks {
     background: #d1dbe3;
     white-space: pre-wrap;
@@ -48,6 +36,7 @@
 }
 
 .fixed_bookmarks {
+    background: #d1dbe399 !important;
     position: fixed;
     right: 5px;
     top: 5px;
@@ -74,4 +63,16 @@
 .curline {
     background: #4d755f !important;
     color: #85ff00 !important;
+}
+
+.warn {
+    color: #d37603 !important;;
+}
+
+.debug {
+    color: #404040 !important;;
+}
+
+.err {
+    color: #ff0000 !important;;
 }

@@ -359,6 +359,9 @@
           settings.curSection = newSection.name;
           curSection = newSection;
           curSectionModel = curSection.model;
+          if (curSectionModel && curSectionModel.onShow) {
+            curSectionModel.onShow();
+          }
           storageLoadSave(true);
         }
       });

@@ -16,6 +16,12 @@ class FullLogReader
         return forceReload || !this.onceParsed;
     }
 
+    onShow() {
+        if (!this.onceParsed) {
+            this.runParse();
+        }
+    }
+
     // return false if dont want to parse with default parser
     runParse() {
         console.log("[FullLogReader] parsing...");
@@ -123,12 +129,13 @@ class FullLogReader
                             bookMarkText = line.replace(cfg.match, cfg.replace);
                         } else {
                             bookMarkText = matches[0];
-                            this.bookmarks.push({
-                                line: i+1,
-                                lineText: line,
-                                bookMarkText: bookMarkText
-                            });
                         }
+                        this.bookmarks.push({
+                            line: i+1,
+                            lineText: line,
+                            bookMarkText: bookMarkText,
+                            addClasses: cfg.addClasses
+                        });
                         break;
                     }
                 }
@@ -307,6 +314,7 @@ class FullLogReader
         // line: i,
         // lineText: line,
         // bookMarkText: bookMarkText
+        // addClasses: addClasses
         for (let i = 0; i < bookmarks.length; i++) {
             const bookmark = bookmarks[i];
             const domBookmart = $("<span />")
@@ -320,6 +328,9 @@ class FullLogReader
                 .attr("shu-line", bookmark.line)
                 .click(this.onBookmarkClick.bind(this))
                 .appendTo(domBookmarks);
+            if (bookmark.addClasses) {
+                domBookmart.addClass(bookmark.addClasses);
+            }
         }
     }
 
@@ -338,6 +349,15 @@ class FullLogReader
 
     getBookmarksConfig() {
         return [
+            {
+                preSearch: "|E:[lua]",
+                match: /E:\[lua\] .+$/,
+                addClasses: "err"
+            },
+            {
+                preSearch: "|I:[lua] [device]",
+                match: /\[lua\] \[device\].+$/
+            },
             {
                 preSearch: "#### exec command #####",
                 match: /#### exec command #####	(\w+)/
