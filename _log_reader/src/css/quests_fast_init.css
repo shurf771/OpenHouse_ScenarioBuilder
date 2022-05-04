@@ -1,0 +1,110 @@
+h3.scenario_path {
+    border-bottom: 2px solid #c3da7f;
+    background: #ebfdd3;
+    color: #559f1e;
+    text-align: center;
+    font-size: 0.7rem;
+    line-height: 4px;
+    padding-bottom: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 15vw;
+    margin-right: 15vw;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+h3.scenario_path:hover {
+    color: #76b446;
+}
+
+#scenarioPathTools {
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.qfi_hr {
+    border: 0;
+    border-bottom: 1px solid #ebdfdf;
+    margin: 0.5em 0.5em 1em;
+}
+
+
+.qfi_header {
+    font-size: 0.9em;
+    font-family: Verdana, Geneva, sans-serif;
+    text-align: center;
+    font-weight: bold;
+    background: #ebebeb;
+    padding: 10px 0 15px;
+}
+
+#qfi_quest_id {
+    width: 25vw;
+    font-size: 0.9em;
+}
+
+
+.qfi_body {
+    font-family: monospace;
+    text-align: center;
+    padding: 10px 0 15px;
+}
+
+.qfi_body .row {
+    padding: 2px 1px;
+    background: #f1f2f3;
+}
+
+.qfi_body .row:hover {
+    background: #ffffff;
+}
+
+.actions_divide {
+    margin: 6px 2px;
+    border-bottom-color: #dbe2e9;
+}
+
+.action_tile {
+    font-size: 12px;
+    border: 1px solid #9196a9;
+    background: #edf5fd;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+.action_tile .title {
+    padding: 2px 2px;
+}
+
+.action_tile .title b {
+    color: #3e00ff;
+    background: #f1ffa3;
+}
+
+.action_tile .line {
+    display: block;
+    height: 100%;
+    background: #242426;
+    color: #c9c8c8;
+    font-size: 85%;
+    padding: 2px 4px 2px 2px;
+}
+
+.action_tile .kill_action {
+    display: block;
+    height: 100%;
+    background: #680c0c;
+    color: #ffc1c1;
+    font-size: 100%;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.action_tile .kill_action:hover {
+    background: #f4aaaa;
+    color: #c70707;
+}

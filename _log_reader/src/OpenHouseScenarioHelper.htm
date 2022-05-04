@@ -7,9 +7,11 @@
   <link rel="stylesheet" href="css/papier-1.3.0.min.css">
   <link rel="stylesheet" href="css/ifuckingknowcss.css">
   <link rel="stylesheet" href="css/full_log_reader.css">
+  <link rel="stylesheet" href="css/quests_fast_init.css">
   <script src="lib/vend/jquery-3.3.1.min.js"></script>
   <script src="lib/full_log_reader.js"></script>
   <script src="lib/div_sections.js"></script>
+  <script src="lib/quests_fast_init.js"></script>
 
   <style>
     html {
@@ -345,11 +347,22 @@
 
       setInterval(cooldownInterval, COOLDOWN_REGEN_MS/2);
 
+      let sectionsDelegate = {
+        settingGet: function(key) {
+          return settings[key];
+        },
+        settingSet: function(key, value) {
+          settings[key] = value;
+          storageLoadSave(true);
+        }
+      };
+
       divSections = new DivSections();
       divSections.start({
         sections: [
           { name: "default",  model: null },
-          { name: "full_log", model: new FullLogReader() }
+          { name: "full_log", model: new FullLogReader() },
+          { name: "quests_fast_init", model: new QuestsFastInit() }
         ],
         curSectionName: settings.curSection || "default",
         onChangeSection: function(newSection) {
@@ -359,6 +372,9 @@
           settings.curSection = newSection.name;
           curSection = newSection;
           curSectionModel = curSection.model;
+          if (curSectionModel && curSectionModel.setDelegate) {
+            curSectionModel.setDelegate(sectionsDelegate);
+          }
           if (curSectionModel && curSectionModel.onShow) {
             curSectionModel.onShow();
           }
@@ -707,6 +723,8 @@
                 else {
                   RESULTS[key] = {
                     "i"          : i,
+                    "actionName" : actionName,
+                    "key"        : key,
                     "order"      : CFG[actionName].order,
                     "extraClass" : CFG[actionName].extraClass,
                     "group"      : CFG[actionName].group,
@@ -747,7 +765,17 @@
 
         // console.log(RESULTS_ARR);
 
-        redrawResults();
+        if (curSectionModel && curSectionModel.onDefaultParseCompleted) {
+          curSectionModel.onDefaultParseCompleted(RESULTS, RESULTS_ARR);
+        }
+
+        if (curSectionModel && curSectionModel.allowRedrawDefaultResults) {
+          if (curSectionModel.allowRedrawDefaultResults()) {
+            redrawResults();
+          }
+        } else {
+          redrawResults();
+        }
       }
       
       inputDataIsChanged(true);
@@ -1009,6 +1037,7 @@
           <textarea class="txtAreaInOut" id="txtInput" style="display: none;"></textarea>
         </div>
 
+        
         <!-- section 1: full_log -->
         <div class="divsection" shu-section="full_log">
           <div id="full_log_tags"></div>
@@ -1016,6 +1045,58 @@
             <div class="col-8" id="full_log_body">...</div>
             <div class="col-4" id="full_log_bookmarks">...</div>
           </div>
+        </div>
+
+
+        <!-- section 2: quests_fast_init -->
+        <div class="divsection" shu-section="quests_fast_init">
+
+          <h3 class="scenario_path">
+              <span id="scenarioPath"></span>
+              <div id="scenarioPathTools" style="display:none;">
+                <select id="cmbScenarioPaths"></select>
+              </div>
+          </h3>
+
+          <hr class="qfi_hr" />
+
+          <div class="row qfi_header">
+            <div class="col-5 qfi_l">
+              &darr; from log : 
+              <br />
+              <br />
+              <button class="bg-red s" id="qfi_log_clear">clear</button>
+            </div>
+
+            <div class="col-2 qfi_c">
+              <button class="bg-deep-orange m" id="qfi_log_replace_all">replace all &rrarr;</button>
+              <br />
+              <button class="bg-green m" id="qfi_log_copy_all">copy all &rarr;</button>
+            </div>
+            
+            <div class="col-5 qfi_r">
+              <select id="qfi_quest_id">
+              </select>
+              <br />
+              <br />
+              <button class="bg-green s" id="qfi_scenario_refresh">refresh</button>
+            </div>
+          </div>
+
+          <div class="qfi_body">
+            <div class="row">
+              <div class="col-5 qfi_l">
+                LEFT
+              </div>
+              <div class="col-2 qfi_c">
+                CENTER
+              </div>
+              <div class="col-5 qfi_r">
+                RIGHT
+              </div>
+            </div>
+          </div>
+
         </div>
 
         

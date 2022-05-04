@@ -14,6 +14,7 @@ class DivSections
         this.curSectionName  = params.curSectionName;
 
         this.redrawSectionsBar();
+        this.onChangeSection( this.curSection );
     }
 
 
