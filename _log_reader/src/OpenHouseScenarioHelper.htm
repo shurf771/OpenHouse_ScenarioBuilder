@@ -174,7 +174,7 @@
         }
         changeLogPath(null);
         onReady();
-        checkAutoLoadFile();
+        checkAutoLoadFile(true);
         //watch();
     });
 
@@ -1040,6 +1040,12 @@
         
         <!-- section 1: full_log -->
         <div class="divsection" shu-section="full_log">
+          <div id="full_log_tags_control">
+            <span>select tags: </span>
+            <button class="bg-green xs" id="fl_btn_all">all</button>
+            <button class="bg-green xs" id="fl_btn_none">none</button>
+            <button class="bg-green xs" id="fl_btn_invert">invert</button>
+          </div>
           <div id="full_log_tags"></div>
           <div class="row">
             <div class="col-8" id="full_log_body">...</div>

@@ -20,6 +20,9 @@ class FullLogReader
         if (!this.onceParsed) {
             this.runParse();
         }
+        $("#fl_btn_all").on( 'click', this.buttonSelectAll_click.bind(this) );
+        $("#fl_btn_none").on( 'click', this.buttonSelectNone_click.bind(this) );
+        $("#fl_btn_invert").on( 'click', this.buttonSelectInvert_click.bind(this) );
     }
 
     // return false if dont want to parse with default parser
@@ -53,6 +56,9 @@ class FullLogReader
         this.onceParsed = null;
         $("#full_log_body").empty();
         $("#full_log_tags").empty();
+        $("#fl_btn_all").off( 'click' );
+        $("#fl_btn_none").off( 'click' );
+        $("#fl_btn_invert").off( 'click' );
     }
 
 
@@ -103,14 +109,18 @@ class FullLogReader
                 let customTag = matchArr[2];
                 if (customTag) {
                     customTag = customTag.substr(1, customTag.length-2).replace(/\W/g,"_");
-                    domLine.addClass(customTag);
-                    this.addTag(customTag);
+                    if (this.isValidTag(customTag)) {
+                        domLine.addClass(customTag);
+                        this.addTag(customTag);
+                    }
                 }
                 customTag = matchArr[3];
                 if (customTag) {
                     customTag = customTag.substr(1, customTag.length-2).replace(/\W/g,"_");
-                    domLine.addClass(customTag);
-                    this.addTag(customTag);
+                    if (this.isValidTag(customTag)) {
+                        domLine.addClass(customTag);
+                        this.addTag(customTag);
+                    }
                 }
             } else {
                 domLine.addClass("other");
@@ -171,6 +181,13 @@ class FullLogReader
             "other": { n: 0, prior: 50 },
             "separator": { fake: true, prior: 40}
         }
+    }
+
+
+    isValidTag(tag) {
+        if (!/\D/.test(tag)) // only numbers - bad tag
+            return false;
+        return true;
     }
 
 
@@ -343,6 +360,49 @@ class FullLogReader
             domLine[0].scrollIntoView(true);
             // $("#full_log_body").find(".curline").removeClass("curline");
             domLine.addClass("curline");
+        }
+    }
+
+
+    buttonSelectAll_click(e) {
+        for (let name in this.hideTagsMap) {
+            let btn = this.tags[name].domBtn;
+            let lines = $("#full_log_body").find("." + name);
+            this.hideTagsMap[name] = false;
+            btn.addClass("bg-blue-grey");
+            lines.show();
+        }
+    }
+
+
+    buttonSelectNone_click(e) {
+        for (let name in this.tags) {
+            if (this.tags[name].fake) continue;
+            let btn = this.tags[name].domBtn;
+            let lines = $("#full_log_body").find("." + name);
+            if (!this.hideTagsMap[name]) {
+                this.hideTagsMap[name] = true;
+                btn.removeClass("bg-blue-grey");
+                lines.hide();
+            }
+        }
+    }
+
+
+    buttonSelectInvert_click(e) {
+        for (let name in this.tags) {
+            if (this.tags[name].fake) continue;
+            let btn = this.tags[name].domBtn;
+            let lines = $("#full_log_body").find("." + name);
+            if (this.hideTagsMap[name]) {
+                this.hideTagsMap[name] = false;
+                btn.addClass("bg-blue-grey");
+                lines.show();
+            } else {
+                this.hideTagsMap[name] = true;
+                btn.removeClass("bg-blue-grey");
+                lines.hide();
+            }
         }
     }
 

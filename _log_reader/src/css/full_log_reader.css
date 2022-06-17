@@ -1,3 +1,18 @@
+#full_log_tags_control {
+    text-align: center;
+    border-top: 1px solid #ababab;
+    padding-top: 3px;
+    padding-bottom: 1px;
+    margin-bottom: 5px;
+    background: #ddd;
+}
+
+#full_log_tags_control span {
+    font-family: monospace;
+    font-size: 12px;
+    color: #404040;
+}
+
 #full_log_tags {
     border-bottom: 1px solid #ababab;
     padding-bottom: 5px;
