@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Node Debug (Mac)",
+            "type": "nwjs",
+            "request": "launch",
+            "runtimeExecutable": "/Applications/nwjs-sdk-v0.49.2-osx-x64/nwjs.app/Contents/MacOS/nwjs",
+            "runtimeArgs": [
+                "${workspaceRoot}/src",
+                "--remote-debugging-port=9222"
+            ],
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "port": 9222
+        },
+        {
             "name": "Node Debug (LogReader Mac)",
             "type": "nwjs",
             "request": "launch",

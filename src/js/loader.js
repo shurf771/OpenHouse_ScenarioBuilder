@@ -152,8 +152,8 @@ class Loader
             str = str.replace(/\/\/.*/g, ""); // remove comments from json
         } catch (err) {
             console.log("loadJSON ERROR reading file: ", err);
-            callback(null, userParams);
-            return;
+            if (callback) callback(null, userParams);
+            return null;
         }
 
         let json = null;
@@ -162,11 +162,12 @@ class Loader
         }
         catch (err) {
             console.log("loadJSON ERROR json parsing: ", err);
-            callback(null, userParams);
-            return;
+            if (callback) callback(null, userParams);
+            return null;
         }
 
-        callback(json, userParams);
+        if (callback) callback(json, userParams);
+        return json;
     }
 
 
@@ -180,11 +181,12 @@ class Loader
             str = buf.toString();
         } catch (err) {
             console.log("loadText ERROR reading file: ", err);
-            callback(null, userParams);
-            return;
+            if (callback) callback(null, userParams);
+            return null;
         }
 
-        callback(str, userParams);
+        if (callback) callback(str, userParams);
+        return str;
     }
 
 

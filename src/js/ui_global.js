@@ -148,6 +148,13 @@ function btnPSDPngsMove_click()
     PsdPngMover.execute();
 }
 
+// --- bonus 2.1 ---
+
+function btnMoveDayVisualsNew_click()
+{
+    CodeGenerator.copyVisualsNew();
+}
+
 // --- bonus 3 ---
 
 function btnOpenHouseEmotionsSrcPathBrowse_click()

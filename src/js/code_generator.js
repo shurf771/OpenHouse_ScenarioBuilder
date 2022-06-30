@@ -237,35 +237,9 @@ class CodeGenerator
         }
     }
 
-
-    static snippetsClear() 
-    {
-        $("#snippetsGenerateResult").empty();
-    }
-
-    static snippetsCopy() 
-    {
-        let s = $("#snippetsGenerateResult").text();
-        let clipboard = nw.Clipboard.get();
-        clipboard.set(s, 'text');
-    }
-
-
-    static snippetsLog(message, level)
-    {
-        let domLog = $("#snippetsGenerateResult");
-
-        let domEntry = $("<span></span>");
-        domEntry.text( message + "\n" );
-        if (level) {
-            domEntry.addClass(level);
-        }
-        domLog.append( domEntry );
-        domLog.scrollTop(domLog.prop("scrollHeight"));
-
-        if (level == "err")  console.error( message );
-        if (level == "warn") console.warn( message );
-    }
+    static snippetsClear()             { CodeGenerator.commonLogClear("#snippetsGenerateResult"); }
+    static snippetsCopy()              { CodeGenerator.commonLogCopy("#snippetsGenerateResult"); }
+    static snippetsLog(message, level) { CodeGenerator.commonLogLog("#snippetsGenerateResult", message, level); }
 
 
 
@@ -578,35 +552,10 @@ class CodeGenerator
         hljs.highlightBlock(domLog[0]);
     }
 
+    static snippetsClear()             { CodeGenerator.commonLogClear("#questConfigGenerateResult"); }
+    static snippetsCopy()              { CodeGenerator.commonLogCopy("#questConfigGenerateResult"); }
+    static snippetsLog(message, level) { CodeGenerator.commonLogLog("#questConfigGenerateResult", message, level); }
 
-    static questConfigClear() 
-    {
-        $("#questConfigGenerateResult").empty();
-    }
-
-    static questConfigCopy() 
-    {
-        let s = $("#questConfigGenerateResult").text();
-        let clipboard = nw.Clipboard.get();
-        clipboard.set(s, 'text');
-    }
-
-
-    static questConfigLog(message, level)
-    {
-        let domLog = $("#questConfigGenerateResult");
-
-        let domEntry = $("<span></span>");
-        domEntry.text( message + "\n" );
-        if (level) {
-            domEntry.addClass(level);
-        }
-        domLog.append( domEntry );
-        domLog.scrollTop(domLog.prop("scrollHeight"));
-
-        if (level == "err")  console.error( message );
-        if (level == "warn") console.warn( message );
-    }
 
 
 
@@ -703,6 +652,268 @@ class CodeGenerator
 
 
 
+
+
+    // -----------------------------------------------------------------
+    //   Перенос JSON визуалов дня из map_objects_visuals_dayXX.json.new
+    // -----------------------------------------------------------------
+
+    static copyVisualsNew() {
+        CodeGenerator.visualsNewLogClear();
+
+        ///////---------------------------------------------------
+        // CodeGenerator.visualsNewLog( "test " );
+        // CodeGenerator.visualsNewLog( "test Warn", "warn" );
+        // CodeGenerator.visualsNewLog( "test Err", "err" );
+
+        const fs = Loader.fs;
+        const path = Loader.path;
+
+        let dayNum = Number.parseInt($("#txtMoveDayVisualsNewNum").val().trim());
+        if (!dayNum) {
+            CodeGenerator.visualsNewLog("Не указан номер дня!", "err");
+            return;
+        }
+        
+        CodeGenerator._curDay = dayNum;
+        UI.saveLocalStorageText( ["txtMoveDayVisualsNewNum"] );
+
+        DataReader.checkPath(function(basedir) {
+            if (!basedir) {
+                alert("Ошибка. Сначала надо указать путь к папке data клиентского репозитория");
+                return;
+            }
+            CodeGenerator._baseDir = basedir;
+            try {
+                UI.enableButtons(null, ".workButton", false); // disable all buttons
+                CodeGenerator._copyVisualsNew(
+                    dayNum,
+                    function(callbackData) {
+                        console.log( "_copyVisualsNew result: ", callbackData );
+                        UI.enableButtons(null, ".workButton", true); // enable all buttons
+                    }
+                );
+            }
+            catch(err) {
+                console.error(err);
+                UI.enableButtons(null, ".workButton", true); // enable all buttons
+            }
+        });
+    }
+
+
+    static _copyVisualsNew(dayNum, callback) 
+    {
+        const path = Loader.path;
+        const baseDir = CodeGenerator._baseDir;
+        
+        let pathVisualOld = path.resolve(baseDir, `shared/gamedata/tables/map_objects_visuals_day${dayNum}.json`);
+        let pathVisualNew = path.resolve(baseDir, `shared/gamedata/tables/map_objects_visuals_day${dayNum}.json.new`);
+        let rawFileOld;
+        let rawFileNew;
+        let jsonFileNew;
+        let lines;
+        let replace_first;
+        let replace_last;
+        let isCommaEndingInReplaceBlock;
+        let strReplaceBlock;
+        let jsonReplaceBlock;
+        let mapReplacableVisualsNames;
+        let mapNewVisualsNames;
+        let jsonReplaceWith;
+
+        rawFileNew = Loader.loadText(pathVisualNew);
+        if (!rawFileNew) {
+            CodeGenerator.visualsNewLog("не найден файл", "err");
+            CodeGenerator.visualsNewLog(pathVisualNew);
+            CodeGenerator.visualsNewLog("забыл включить psd_import ?", "err");
+            return callback();
+        }
+
+        try {
+            jsonFileNew = JSON.parse(rawFileNew);
+        }
+        catch (err) {
+            CodeGenerator.visualsNewLog("невозможно прочитать файл", "err");
+            CodeGenerator.visualsNewLog(pathVisualNew, "err");
+            CodeGenerator.visualsNewLog(err, "err");
+            console.log("loadJSON ERROR json parsing: ", err);
+            return callback();
+        }
+
+        if (!jsonFileNew.length || jsonFileNew.length == 0) {
+            CodeGenerator.visualsNewLog(pathVisualNew, "err");
+            CodeGenerator.visualsNewLog("пустой. ничего не делаю", "err");
+            return callback();
+        }
+
+        rawFileOld = Loader.loadText(pathVisualOld);
+        if (!rawFileOld || rawFileOld.trim().length == 0) {
+            CodeGenerator.visualsNewLog(pathVisualOld);
+            CodeGenerator.visualsNewLog("был пустой или не существовал, поэтому .new просто скопирован на его место");
+            Loader.saveText(
+                pathVisualOld, rawFileNew,
+                function (p) {
+                    console.log("Saved to " + pathVisualOld + " [OK]");
+                    callback(true);
+                }
+            );
+            return;
+        }
+
+        lines         = rawFileOld.split("\n");
+        replace_first = 0;
+        replace_last  = lines.length - 1;
+
+        let lastFoundNonEpmtyLine = 0;
+
+        for (let l=0; l<lines.length; l++)
+        {
+            const line = lines[l];
+            if (l > 0 && /^\s*\/\//.test(line)) {
+                replace_last = Math.min(lastFoundNonEpmtyLine, l - 1);
+                break;
+            }
+            else if (/\S/.test(line)) {
+                lastFoundNonEpmtyLine = l;
+            }
+        }
+
+        if (/^\s*\[\s*$/.test(lines[replace_first])) replace_first++;
+        if (/^\s*\]\s*$/.test(lines[replace_last]))  replace_last--;
+
+        const patternCommaEnd = /}\s*,\s*/;
+        if (patternCommaEnd.test( lines[replace_last]) ) {
+            lines[replace_last] = lines[replace_last].replace(patternCommaEnd, "}");
+            isCommaEndingInReplaceBlock = true;
+        }
+
+        let tmpArrLines = [];
+        for (let l=replace_first; l<=replace_last; l++)
+        {
+            const line = lines[l];
+            tmpArrLines.push(line);
+        }
+
+        strReplaceBlock = "[" + tmpArrLines.join("\n") + "]";
+        //console.log("strReplaceBlock: ", strReplaceBlock);
+
+        jsonReplaceBlock = JSON.parse(strReplaceBlock);
+        console.log("jsonReplaceBlock: ", jsonReplaceBlock);
+
+        // statistics
+        let statNewVisuals = [];
+        let statModifiedVisuals = [];
+        let statNRemain = 0;
+
+        // build maps
+        mapReplacableVisualsNames = {};
+        mapNewVisualsNames = {};
+        
+        for (let i=0; i<jsonReplaceBlock.length; i++) {
+            const visual = jsonReplaceBlock[i];
+            mapReplacableVisualsNames[visual.name] = visual;
+        }
+
+        for (let i=0; i<jsonFileNew.length; i++) {
+            const visual = jsonFileNew[i];
+            mapNewVisualsNames[visual.name] = visual; // ? not really needed
+            const oldVisual = mapReplacableVisualsNames[visual.name];
+
+            // yes, exist
+            if (oldVisual) {
+                // equal
+                if (CodeGenerator._compareVisuals(visual, oldVisual)) {
+                    statNRemain += 1;
+                } 
+                // different
+                else {
+                    for (let k in visual) {
+                        oldVisual[k] = visual[k];
+                    }
+                    statModifiedVisuals.push( visual.name );
+                }
+            }
+            // new visual
+            else {
+                jsonReplaceBlock.push( visual );
+                statNewVisuals.push( visual.name );
+            }
+        }
+
+        // write stats
+        CodeGenerator.visualsNewLog(`>>>> Визуалов осталось как были: ${statNRemain} шт.`, "err");
+        CodeGenerator.visualsNewLog(`>>>> Новые визуалы: ${statNewVisuals.length} шт.`, "err");
+        for (let i=0; i<statNewVisuals.length; i++) {
+            CodeGenerator.visualsNewLog("  " + statNewVisuals[i]);
+        }
+        CodeGenerator.visualsNewLog(`>>>> Измененные визуалы: ${statModifiedVisuals.length} шт.`, "err");
+        for (let i=0; i<statModifiedVisuals.length; i++) {
+            CodeGenerator.visualsNewLog("  " + statModifiedVisuals[i]);
+        }
+
+
+        // build final replacing block
+        strReplaceBlock = JSON.stringify(jsonReplaceBlock, null, 2);
+        let newBlockLines = strReplaceBlock.split("\n");
+
+        // remove 1st and last lines
+        if (newBlockLines.length > 0) newBlockLines.shift();
+        if (newBlockLines.length > 0) newBlockLines.pop();
+
+        if (newBlockLines.length > 0 && isCommaEndingInReplaceBlock) {
+            newBlockLines[newBlockLines.length-1] += ",";
+        }
+
+        // build whole file from parts
+        let queue = [
+            // [ array_of_lines,  index_from,  index_to ]
+            [ lines,         0,              replace_first-1        ],
+            [ newBlockLines, 0,              newBlockLines.length-1 ],
+            [ lines,         replace_last+1, lines.length-1         ]
+        ];
+        let newLines = [];
+
+        for (let qi=0; qi<queue.length; qi++) {
+            let q = queue[qi];
+            for (let i=q[1]; i<=q[2]; i++) {
+                newLines.push(q[0][i]);
+            }
+        }
+
+        rawFileOld = newLines.join("\n");
+
+        /*  
+            // --- закоментил, тошо сбивает с толку, что new продолжает отличаться от json. пусть будут идентичными
+        // round tooooo long float numbers ~ 72.1199999999999 => 72.12
+        rawFileOld = rawFileOld.replace(/(\d+\.\d{4,})/g, function(match) {
+            return String(Math.floor(parseFloat(match) * 10) / 10);
+        });
+        */
+
+        CodeGenerator.visualsNewLog("Saving...", "warn");
+        Loader.saveText(
+            pathVisualOld, rawFileOld,
+            function (p) {
+                CodeGenerator.visualsNewLog("Saved to " + pathVisualOld + " [OK]", "warn");
+                callback(true);
+            }
+        );
+    }
+
+
+    static _compareVisuals(v1, v2) {
+        return ( !!v1.offset    == !!v2.offset )
+            && ( !!v1.size      == !!v2.size )
+            && ( v1.offset.x    == v2.offset.x )
+            && ( v1.offset.y    == v2.offset.y )
+            && ( v1.size.width  == v2.size.width )
+            && ( v1.size.height == v2.size.height );
+    }
+
+    static visualsNewLogClear()             { CodeGenerator.commonLogClear("#moveDayVisualsNewReport"); }
+    static visualsNewLogCopy()              { CodeGenerator.commonLogCopy("#moveDayVisualsNewReport"); }
+    static visualsNewLog(message, level)    { CodeGenerator.commonLogLog("#moveDayVisualsNewReport", message, level); }
 
 
     // -----------------------------------------------------------------
@@ -803,6 +1014,38 @@ class CodeGenerator
                 CodeGenerator._getActionsFromDay( objAction["actions"], actionFilters, dataDest, nextQuestMapDest );
             }
         }
+    }
+
+
+
+    static commonLogClear(logElementSelector) 
+    {
+        $(logElementSelector).empty();
+    }
+
+    static commonLogCopy(logElementSelector) 
+    {
+        let s = $(logElementSelector).text();
+        let clipboard = nw.Clipboard.get();
+        clipboard.set(s, 'text');
+    }
+
+
+    static commonLogLog(logElementSelector, message, level)
+    {
+        let domLog = $(logElementSelector);
+
+        let domEntry = $("<span></span>");
+        domEntry.text( message + "\n" );
+        if (level) {
+            domEntry.addClass(level);
+        }
+        domLog.append( domEntry );
+        
+        domLog.scrollTop(domLog.prop("scrollHeight"));
+
+        if (level == "err")  console.error( message );
+        if (level == "warn") console.warn( message );
     }
 
 

@@ -31,7 +31,7 @@
 
         <section class="card" id="topToolbar">
             <img id="imgLogo" src="img/icon.png" />
-            <h1 class="center">OpenHouse scenario generator v0.18</h1>
+            <h1 class="center">OpenHouse scenario generator v0.19</h1>
             <div class="row">
                 <div class="col-12 center">
                     <button class="bg-pink btn" shu-onclick="btnReload_click">Reload</button>
@@ -284,6 +284,54 @@
                             </tr>
                         </tbody>
                     </table>
+            </div>
+        </section>
+
+
+        <!-- Tool 2.1 : Update from map_objects_visuals_dayXX.json.new -->
+
+        <hr />
+
+        <section class="card bonustool" id="bonusToolCopyFromVisualsJsonNew">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Перенос JSON визуалов дня из <b>map_objects_visuals_dayXX.json.new</b></h2>
+                    <blockquote>
+                        после того как <b>psd_import</b> отработал и сгенерировал <b>map_objects_visuals_dayXX.json.new</b> (где XX = указанный ниже день),
+                        данная утилита поможет перенести в <b>map_objects_visuals_dayXX.json</b> только необходимые визуалы (новые или измененные), 
+                        при этом не затрагивая остальные визуалы, в т.ч. визуалы, которые находятся внизу файла, под строками(*)
+                        <small><pre>
+// ====================================================================================
+// ========                             NON-psd objects                        ========
+// ====================================================================================</pre></small>
+                        (*) если точнее, "заменяемый блок" заканчивает на первой сверху строке, которая полностью состоит из комментария
+                    </blockquote>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4 right">
+                    Номер дня: &nbsp;
+                </div>
+                <div class="col-4 center">
+                    <input type="text" placeholder="69" class="full-width font-small localStorageText" 
+                            shu-default="" id="txtMoveDayVisualsNewNum" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 center">
+                    <br />
+                    <button class="bg-teal btn" id="btnMoveDayVisualsNew" shu-onclick="btnMoveDayVisualsNew_click">Перенести</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 center">
+                    <br />
+                    <div class="row">
+                        <div class="col-12">
+                            <pre class="preLog json" style="text-align:left;" id="moveDayVisualsNewReport"></pre>
+                        </div>
+                    </div>
+                    <br />
             </div>
         </section>
 
