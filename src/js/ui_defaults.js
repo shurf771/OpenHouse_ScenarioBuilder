@@ -257,4 +257,50 @@ class UIDefaults
 
         UIDefaults.parseValues();
     }
+
+
+
+    static presetsInit() {
+        try {
+            UIDefaults.presets = { };
+            let json = Loader.loadText("presets.json");
+            json = JSON.parse(json);
+            console.log("Presets: ", json);
+            let domSelect = $("#pathsAndUrlsPresets");
+            for (let i=0; i<json.length; i++) {
+                const preset = json[i];
+                UIDefaults.presets[preset.name] = preset;
+                $("<option />").text(preset.name).val(preset.name).appendTo(domSelect);
+            }
+        }
+        catch (error) {
+            console.error("Can't init presets!", error)
+        }
+    }
+
+
+    static presetApply() {
+        let curName = $("#pathsAndUrlsPresets").val();
+        const preset = UIDefaults.presets[curName];
+        console.log("Preset chosen: ", preset);
+
+        let queue = [
+            { textInput: "txtM3QuestsURL", field: "quests_spreadsheets" },
+            { textInput: "txtM3LocalizationURL", field: "localization_spreadsheets" },
+            { textInput: "txtDataPath", field: "data_path" }
+        ];
+        
+        for (let i=0; i<queue.length; i++) {
+            let q = queue[i];
+            let domText = $("#"+q.textInput);
+            let oldval = domText.val().trim();
+            let newval = preset[q.field].trim();
+            if (oldval != newval)
+            {
+                domText.val(newval);
+                domText.css("background-color", "#CCFFCC");
+                setTimeout((el) => { el.css("background-color", "#FFFFFF"); }, 300+i*50, domText);
+            }
+        }
+    }
 }

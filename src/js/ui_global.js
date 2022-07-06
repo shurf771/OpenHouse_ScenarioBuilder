@@ -19,6 +19,17 @@ function btnClearAlerts_click()
     UI.clearAlerts();
 }
 
+function btnPresetApply_click()
+{
+    UIDefaults.presetApply();
+}
+
+function btnPresetEdit_click()
+{
+    // Open a text file with default text editor.
+    nw.Shell.openItem("presets.json");
+}
+
 
 // --- step 1 ---
 

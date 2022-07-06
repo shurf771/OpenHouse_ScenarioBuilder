@@ -26,6 +26,7 @@ function start()
     state.step = 0;
 
     UIDefaults.init(state);
+    UIDefaults.presetsInit();
     UI.configureUI();
     gotoStep1();
 

@@ -31,7 +31,7 @@
 
         <section class="card" id="topToolbar">
             <img id="imgLogo" src="img/icon.png" />
-            <h1 class="center">OpenHouse scenario generator v0.19</h1>
+            <h1 class="center">OpenHouse scenario generator v0.20</h1>
             <div class="row">
                 <div class="col-12 center">
                     <button class="bg-pink btn" shu-onclick="btnReload_click">Reload</button>
@@ -102,9 +102,16 @@
             </div>
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-7">
                     <button class="bg-green btn workButton" shu-onclick="btnStep1LoadNoCache_click">Загрузить (без кэша)</button>
                     <button class="bg-light-green btn workButton" shu-onclick="btnStep1Load_click">Загрузить</button>
+                </div>
+                <div class="col-5 right">
+                    <b>пресеты:</b>
+                    <small><i><a class="btn" style="cursor:pointer;" shu-onclick="btnPresetEdit_click">(редактировать)</a></i></small>
+                    <br />
+                    <select id="pathsAndUrlsPresets"></select>
+                    <button class="bg-light-green btn s workButton" shu-onclick="btnPresetApply_click">применить</button>
                 </div>
             </div>
         </section>
