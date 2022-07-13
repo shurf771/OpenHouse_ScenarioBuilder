@@ -80,6 +80,12 @@ class UIDefaults
                 "textValue": "idea",
                 "tabIndent": 1
             },
+            "talk.animation.dog" : {
+                "descr": "Анимация-заглушка в баблах (talk) для dog",
+                "type": "string",
+                "textValue": "bark",
+                "tabIndent": 1
+            },
             "comics.animations" : {
                 "descr": "Вставлять заглушки анимаций 'через talk' в комиксы",
                 "type": "bool",
