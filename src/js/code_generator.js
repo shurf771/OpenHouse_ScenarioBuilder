@@ -60,7 +60,7 @@ class CodeGenerator
         const fs = Loader.fs;
         const path = Loader.path;
 
-        CodeGenerator.questConfigClear();
+        CodeGenerator.snippetsClear();
 
         let strPersonages = $("#txtGenerateSnippetsPersonagesList").val().trim().replace(/\s/g,"");
         if (!strPersonages) {
@@ -343,7 +343,7 @@ class CodeGenerator
         const fs = Loader.fs;
         const path = Loader.path;
 
-        CodeGenerator.questConfigClear();
+        CodeGenerator.questsConfigClear();
 
         let dayNum = Number.parseInt($("#txtGenerateQuestConfigDayNum").val().trim());
         if (!dayNum) {
@@ -552,9 +552,9 @@ class CodeGenerator
         hljs.highlightBlock(domLog[0]);
     }
 
-    static snippetsClear()             { CodeGenerator.commonLogClear("#questConfigGenerateResult"); }
-    static snippetsCopy()              { CodeGenerator.commonLogCopy("#questConfigGenerateResult"); }
-    static snippetsLog(message, level) { CodeGenerator.commonLogLog("#questConfigGenerateResult", message, level); }
+    static questsConfigClear()             { CodeGenerator.commonLogClear("#questConfigGenerateResult"); }
+    static questsConfigCopy()              { CodeGenerator.commonLogCopy("#questConfigGenerateResult"); }
+    static questsConfigLog(message, level) { CodeGenerator.commonLogLog("#questConfigGenerateResult", message, level); }
 
 
 

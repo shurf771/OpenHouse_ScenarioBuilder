@@ -22,8 +22,8 @@ class ShuJSON
 
     static encode(_obj) 
     {
-        let prefixItem = "\t"
-        let str = "";
+        const prefixItem = "\t"
+        let   str = "";
 
         function _encode(objOrArr, prefixes) {
             if (Array.isArray(objOrArr)) {
