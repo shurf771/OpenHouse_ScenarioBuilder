@@ -21,5 +21,7 @@ function getCharOccurrencesCount(text, char) {
 // googleDoc names into day.json valid names
 function nameAlias(name) {
     if (name == "oscar") return "main";
+    if (name == "alice") return "ellie";
+    if (name == "balto") return "dog";
     return name;
 }

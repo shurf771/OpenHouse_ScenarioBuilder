@@ -423,8 +423,9 @@ class JSONGenerator
             // talks
             if (talkType == "praise" || talkType == "idle")
             {
+                let talkAnimation = JSONGenerator.defaults["talk.animation." + talk.pers] || JSONGenerator.defaults["talk.animation.other"];
                 let bubbleAnimation = ((isTalkAnimationsOn && talkType == "praise") || (isTalkMustAAnimationsOn && talkType == "idle")
-                    ? (JSONGenerator.defaults["talk.animation." + talk.pers] && JSONGenerator.defaults["talk.animation." + talk.pers].value)
+                    ? (talkAnimation && talkAnimation.value)
                     : null);
                 let template = (bubbleAnimation ? TPL_TALK_EX : TPL_TALK);
                 let str = replaces(template, {

@@ -40,6 +40,12 @@ class UIDefaults
                 "type": "position",
                 "textValue": "0, 0"
             },
+            "position.dog" : {
+                "order": 60,
+                "descr": "Дефолтная позиция dog",
+                "type": "position",
+                "textValue": "0, 0"
+            },
             "talk.animations" : {
                 "descr": "Вставлять анимации-заглушки в баблы (talk)",
                 "type": "bool",
@@ -84,6 +90,12 @@ class UIDefaults
                 "descr": "Анимация-заглушка в баблах (talk) для dog",
                 "type": "string",
                 "textValue": "bark",
+                "tabIndent": 1
+            },
+            "talk.animation.other" : {
+                "descr": "Анимация-заглушка в баблах (talk) для остальных",
+                "type": "string",
+                "textValue": "idea",
                 "tabIndent": 1
             },
             "comics.animations" : {
