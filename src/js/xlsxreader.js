@@ -42,7 +42,29 @@ class XLSXReader
         if (!state.jsons.jsonQuests) {
             state.jsons.jsonQuests = XLSX.utils.sheet_to_json( state.m3quests.Sheets.quests, {"header": 1} );
         }
-        let jsonQuests = state.jsons.jsonQuests
+        if (!state.jsons.jsonEpisodes) {
+            state.jsons.jsonEpisodes = XLSX.utils.sheet_to_json( state.m3quests.Sheets.episodes, {"header": 1} );
+        }
+        let jsonEpisodes = state.jsons.jsonEpisodes;
+        let jsonQuests = state.jsons.jsonQuests;
+        let worldNumber = episode_id;
+
+        state.curWorldTitle = state.curDayTitle;
+
+        // designshow style - 1 world contains may episodes, need to pick corrent localization sheet
+        if (jsonEpisodes) {
+            for (let j=0; j<jsonEpisodes.length; j++) {
+                let jsonEpisodesRow = jsonEpisodes[j];
+                if (jsonEpisodesRow[0] == state.curDayTitle && jsonEpisodesRow[8]) {
+                    worldNumber = parseInt(jsonEpisodesRow[8]);
+                    if (isNaN(worldNumber)) {
+                        worldNumber = episode_id;
+                    }
+                    state.curWorldTitle = state.curWorldTitle.replace(/\d+/, worldNumber);
+                    break;
+                }
+            }
+        }
 
         // console.log("episodes = ", jsonQuests);
 
@@ -111,7 +133,7 @@ class XLSXReader
                 sheet = state.m3localization.Sheets["D1"];
             }
             if (!sheet) {
-                let alternativeName = "D" + state.curDayTitle.replace(/.+(\d+)/, "$1");
+                let alternativeName = "D" + worldNumber;
                 sheet = state.m3localization.Sheets[alternativeName];
                 if (!sheet) {
                     UI.alertError(`can't find sheet '${state.curDayTitle}' (or even '${alternativeName}') in m3:localization`);
@@ -141,7 +163,7 @@ class XLSXReader
             }
 
             // row AND 1st column of row are not empty, day location == currentDay
-            if (row.length > 0 && (row[0] == state.curDayTitle || row[0] == "initial" || (row[0] && row[0].replace("day","D") == state.curDayTitle)))
+            if (row.length > 0 && (row[0] == state.curDayTitle || row[0] == state.curWorldTitle || row[0] == "initial" || (row[0] && row[0].replace("day","D") == state.curDayTitle)))
             {
                 // AND other important (2,4,5) columns are not all empty
                 if (row[2] || row[4] || row[5]) 
