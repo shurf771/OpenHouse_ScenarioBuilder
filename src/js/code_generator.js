@@ -726,8 +726,20 @@ class CodeGenerator
         if (!rawFileNew) {
             CodeGenerator.visualsNewLog("не найден файл", "err");
             CodeGenerator.visualsNewLog(pathVisualNew);
-            CodeGenerator.visualsNewLog("забыл включить psd_import ?", "err");
-            return callback();
+
+            // 'episode' вместо 'day'
+            CodeGenerator.visualsNewLog("пробую 'episode' вместо 'day'");
+            pathVisualOld = pathVisualOld.replace(/map_objects_visuals_day/, "map_objects_visuals_episode");
+            pathVisualNew = pathVisualNew.replace(/map_objects_visuals_day/, "map_objects_visuals_episode");
+            rawFileNew = Loader.loadText(pathVisualNew);
+            
+            if (!rawFileNew) {
+                CodeGenerator.visualsNewLog("не найден файл", "err");
+                CodeGenerator.visualsNewLog(pathVisualNew);
+                
+                CodeGenerator.visualsNewLog("забыл включить psd_import ?", "err");
+                return callback();
+            }
         }
 
         try {
