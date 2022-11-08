@@ -157,6 +157,16 @@ class XLSXReader
         for (let index = READ_FROM_LINE; index < jsonLocalization.length; index++) {
             const row = jsonLocalization[index];
 
+            // check if it is the end of current episode
+            const pattNewEpisode = /\s*start\.episode\.(\d+)\.name\s*/;
+            if (row[4] && pattNewEpisode.test(row[4])) {
+                let newEpisode = parseInt(row[4].match(pattNewEpisode)[1]);
+                if (newEpisode > episode_id) {
+                    // new episode began in localization sheet -> don't parse further
+                    break;
+                }
+            }
+
             // check if 1st column empty (error)
             if (row.length > 0 && !row[0] && row[4] && row[5]) {
                 UI.alertError(`Колонка location пустая! Строка ${index+1}, id = ${row[4]}`);

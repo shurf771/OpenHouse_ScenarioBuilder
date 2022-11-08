@@ -23,5 +23,7 @@ function nameAlias(name) {
     if (name == "oscar") return "main";
     if (name == "alice") return "ellie";
     if (name == "balto") return "dog";
+    if (name == "francesca") return "sarah";
+    if (name == "guiseppe") return "gondola";
     return name;
 }

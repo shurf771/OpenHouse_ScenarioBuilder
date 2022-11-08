@@ -34,6 +34,7 @@ class JSONGenerator
         
         JSONGenerator.defaults = defaults;
         JSONGenerator.blocks = [];
+        JSONGenerator.tap_blocks = [];
         JSONGenerator.episode_id = 0;
 
         JSONGenerator._generateDayStart();
@@ -195,6 +196,7 @@ class JSONGenerator
         let lastTalkType = null;
         let talksArr = [];
         let mustArr = [];
+        let tapsArr = [];
         let talkingSessionPerses = [];
         let _mapTalkingSessionPerses = {};
 
@@ -233,7 +235,11 @@ class JSONGenerator
             }
             if (talkType == "idle") {
                 mustArr.push({"id": id, "pers": pers, "ru": row.ru});
-            } else {
+            } 
+            else if (talkType == "tap") {
+                tapsArr.push({"id": id, "pers": pers, "ru": row.ru}); // TODO: add to JSONGenerator.tap_blocks, then generate in the end!
+            } 
+            else {
                 talksArr.push({"id": id, "pers": pers, "ru": row.ru, "comicsIcon": comicsIcon});
             }
 
