@@ -231,6 +231,36 @@ class CompareScenarios
             arrDest.push( json );
         }
 
+        else if (json.action == "show_messenger") 
+        {
+            let photo = null;
+            if (json.personages && json.personages.length > 0) {
+                json.personages.forEach(personage => {
+                    if (personage.text_id) {
+                        if (json.personage && errorsArr) {
+                            if (errorsArr) errorsArr.push(`два говорящих одновременно персонажа в show_messenger для фразы <b>${text_id}</b>`);
+                        }
+                        json.personage = personage.name;
+                        json.text_id = personage.text_id;
+                    }
+                    else if (personage.photo) {
+                        photo = personage.photo;
+                    }
+                });
+                if (!photo && !json.personage && errorsArr) {
+                    if (errorsArr) errorsArr.push(`не указан говорящий персонаж в show_messenger`);
+                }
+            } else {
+                if (errorsArr) errorsArr.push(`пустой show_messenger.personages`);
+            }
+
+            if (json.text_id && json.personage)
+            {
+                mapDest[ json.text_id ] = json;
+                arrDest.push( json );
+            }
+        }
+
         else if (json.actions && Array.isArray(json.actions)) 
         {
             CompareScenarios._getAllTalksRecursive( json.actions, arrDest, mapDest, errorsArr, googleDocErrorsArr );
