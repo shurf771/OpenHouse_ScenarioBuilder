@@ -19,7 +19,7 @@
   },
   {
     "name": "DesignShow :: Dev",
-    "quests_spreadsheets": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQeArqW2ByY5SS9-wmEVtP6I5Sr85PYKTBNZq2OOD3Zp255UmDo_kU0XykS84gFxRXn_v5O9EFlohSP/pub?output=xlsx",
+    "quests_spreadsheets": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS9TgSgLxHAFyfV1u1VfN-BtXWT8Isf1H8YwhkVEGq2eVA2hYiJwRO0XlLNCSlvDkf3J5pdQ7EtFkjm/pub?output=xlsx",
     "localization_spreadsheets": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwfaex3lmCF-oe8WEo7J73Akz6ZYiETo8cBP8zvQySAteH70SSIcQnhRBwAW37mcv0wvzT6OZDl2X8/pub?output=xlsx",
     "data_path": "/Users/user/dev/ramble-cat/client/data"
   }

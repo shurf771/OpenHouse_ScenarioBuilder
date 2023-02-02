@@ -285,10 +285,21 @@ class UIDefaults
             json = JSON.parse(json);
             console.log("Presets: ", json);
             let domSelect = $("#pathsAndUrlsPresets");
+            let curQuestsVal = (localStorage.getItem("txtM3QuestsURL") || "").trim();
+            let curLocalizationVal = (localStorage.getItem("txtM3LocalizationURL") || "").trim();
+            let selectedPreset = null;
             for (let i=0; i<json.length; i++) {
                 const preset = json[i];
                 UIDefaults.presets[preset.name] = preset;
                 $("<option />").text(preset.name).val(preset.name).appendTo(domSelect);
+                if (preset.localization_spreadsheets == curLocalizationVal 
+                    && preset.quests_spreadsheets == curQuestsVal)
+                {
+                    selectedPreset = preset.name;
+                }
+            }
+            if (selectedPreset) {
+                domSelect.val(selectedPreset);
             }
         }
         catch (error) {

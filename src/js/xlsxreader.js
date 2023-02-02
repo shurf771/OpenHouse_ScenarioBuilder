@@ -182,13 +182,26 @@ class XLSXReader
                     rowObj.id    = String(rowObj.id);
                     
                     // next quest
-                    let questNamePattern = /(quest|fade)\.([\d\.]+).name/;
+                    let questNamePattern = /(quest|fade|start\.episode)\.([\d\.]+).name/;
                     if (questNamePattern.test(rowObj.id))
                     {
                         let match = rowObj.id.match(questNamePattern);
                         if (match) {
                             let qid = match[2];
-                            if (questsMap[qid]) {
+                            if (match[1] == "start.episode") {
+                                // start episode block
+                                currentQuest = questsMap["start.episode"];
+                                if (!currentQuest) {
+                                    currentQuest = {
+                                        id: `start.episode.${qid}`,
+                                        episode_id: parseInt(qid),
+                                        isStartEpisode: true
+                                    };
+                                    questsMap["start.episode"] = currentQuest;
+                                    quests.unshift(currentQuest);
+                                }
+                            }
+                            else if (questsMap[qid]) {
                                 currentQuest = questsMap[qid];
                                 if (!currentQuest.title) 
                                     currentQuest.title = rowObj.ru;

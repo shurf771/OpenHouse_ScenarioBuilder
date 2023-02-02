@@ -86,6 +86,7 @@ class JSONGenerator
             id : quest.id,
             title : quest.title,
             is_quest_group_complete : !!quest.is_quest_group_complete,
+            isStartEpisode : quest.isStartEpisode
         } );
 
         let firstDayOpenLocation = (quest.is1st 
@@ -94,8 +95,9 @@ class JSONGenerator
         
         let replacesParams = {
             "__!quest:id!__"          : quest.id,
+            "__!quest:episode_id!__"  : quest.episode_id,
             "__!quest:title!__"       : String(quest.title).replace(/\r?\n/g, " "),
-            "__!questblock:type!__"   : (quest.is_quest_group_complete ? "quest_group_complete" : "quest"),
+            "__!questblock:type!__"   : (quest.isStartEpisode ? "episode_start" : (quest.is_quest_group_complete ? "quest_group_complete" : "quest")),
             "__!defaults:camera:x!__" : JSONGenerator.defaults.camera.value.x,
             "__!defaults:camera:y!__" : JSONGenerator.defaults.camera.value.y,
             "__!startblock:prefix!__" : "",
@@ -186,7 +188,11 @@ class JSONGenerator
 
 
         // quest start
-        let txtStartQuest = replaces(TPL_QUEST_START, replacesParams);
+        let tplQuestStart = TPL_QUEST_START;
+        if (quest.isStartEpisode) {
+            tplQuestStart = TPL_QUEST_EPISODE_START;
+        }
+        let txtStartQuest = replaces(tplQuestStart, replacesParams);
         txtStartQuest = tabs(txtStartQuest, 1);
         JSONGenerator.addBlock( txtStartQuest, BlockTypes.TEXT );
 
@@ -239,6 +245,9 @@ class JSONGenerator
             else if (talkType == "tap") {
                 tapsArr.push({"id": id, "pers": pers, "ru": row.ru}); // TODO: add to JSONGenerator.tap_blocks, then generate in the end!
             } 
+            else if (talkType == "name") {
+                // name.episodeX - skip it
+            }
             else {
                 talksArr.push({"id": id, "pers": pers, "ru": row.ru, "comicsIcon": comicsIcon});
             }
@@ -427,7 +436,7 @@ class JSONGenerator
             let talk = talksArr[i];
 
             // talks
-            if (talkType == "praise" || talkType == "idle")
+            if (talkType == "praise" || talkType == "idle" || talkType == "episode")
             {
                 let talkAnimation = JSONGenerator.defaults["talk.animation." + talk.pers] || JSONGenerator.defaults["talk.animation.other"];
                 let bubbleAnimation = ((isTalkAnimationsOn && talkType == "praise") || (isTalkMustAAnimationsOn && talkType == "idle")
@@ -744,6 +753,49 @@ const TPL_FADE =
 
 const TPL_DAY_START = '[';
 
+
+const TPL_QUEST_EPISODE_START =
+`{
+    "name": "__!quest:id!__",
+    "type": "__!questblock:type!__",
+    "actions": [
+        { "scenario": "parallel", "actions" : [
+            { "action": "open_location", "area": "episode__!quest:episode_id!__" },
+
+            { "action": "lock_scene", "show_background": false },
+
+            { "action": "wait_modals_close" },
+
+            { 
+                "scenario": "parallel", 
+                "animation_script": "cut_scene.anim.fade_scene_in_out", 
+                "anim_config": { 
+                    "chapter": true, 
+                    "text": "name.episode__!quest:episode_id!__", 
+                    "fade_settings": {
+                        "stripes_show_time": null,
+                        "stripes_hide_time": null,
+                        "stripes_hide_start_delay": null,
+                        "message_show_start_delay": null,
+                        "message_show_top_time": null,
+                        "message_show_bottom_time": null,
+                        "message_hide_time": null,
+                        "message_hide_start_delay": null,
+                        "force_appear": null,
+                        "secondary_text": null
+                    }
+                }, 
+                "actions" : 
+                [
+                    { "action": "zoom_camera", "zoom": 1.15, "time": 1, "transition": "easeout"},
+                    { "action": "move_camera_fast", "position": {"x":__!defaults:camera:x!__, "y":__!defaults:camera:y!__}, "time": 1}__!startblock:prefix!__
+        __!personages:setidle!__
+        __!personages:startpositions!__
+        __!personages:looks!__
+                ]
+            }
+        ]},
+`;
 
 const TPL_QUEST_START =
 `{
