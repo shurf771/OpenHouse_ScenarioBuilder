@@ -19,23 +19,24 @@ class CodeGenerator
             'computer_work_cycle': true,
             'drums_idle': true,
             'guitar_idle': true,
+            'idle_bag_in_hand': true,
+            'IDLE_bag': true,
+            'idle_bench': true,
             'idle': true,
             'idle02': true,
             'idle03': true,
-            'IDLE_bag': true,
-            'idle_bag_in_hand': true,
-            'idle_bench': true,
             'jump_idle': true,
             'listen': true,
             'lotus_idle_ad': true,
+            'lotus': true,
             'painting_floor_idle': true,
             'play_idle': true,
             'play_stand_idle': true,
             'read_idle': true,
             'rolling_idle': true,
             'sit_idle': true,
-            'Sit_Listen': true,
             'sit_listen': true,
+            'Sit_Listen': true,
             'sit_on_sand_idle': true,
             'Sit_Talk': true,
             'sit_talk': true,
@@ -46,8 +47,8 @@ class CodeGenerator
             'table_soccer_idle': true,
             'table_socker_idle': true,
             'take_hands': true,
-            'talk': true,
             'talk_sit': true,
+            'talk': true,
             'tap_sit': true,
             'tap_stand': true,
             'tap_walk': true,
@@ -116,19 +117,27 @@ class CodeGenerator
         let arrPersonageNames = cfg.strPersonages.split(",");
         console.log(arrPersonageNames);
 
+        let mapPersonageGonfigsByName = {};
+
+        for (let j = 0; j < jsons.length; j++) {
+            const json = jsons[j];
+            for (let p = 0; p < json.length; p++) {
+                const eachPersCfg = json[p];
+                mapPersonageGonfigsByName[eachPersCfg.name] = eachPersCfg;
+            }
+        }
+
         let listToWork = [];
         
         for (let i = 0; i < arrPersonageNames.length; i++) {
             const persName = arrPersonageNames[i];
-            let persConfig = null;
-            for (let j = 0; persConfig == null && j < jsons.length; j++) {
-                const json = jsons[j];
-                for (let p = 0; p < json.length; p++) {
-                    const eachPersCfg = json[p];
-                    if (eachPersCfg.name == persName) {
-                        persConfig = eachPersCfg;
-                        break;
-                    }
+            let persConfig = mapPersonageGonfigsByName[persName];
+            
+            if (persConfig && persConfig.inherits) {
+                let inheretedPers = mapPersonageGonfigsByName[persConfig.inherits];
+                if (inheretedPers) {
+                    console.log(`${persName} inherirs ${persConfig.inherits}, so we use his congif`);
+                    persConfig = inheretedPers;
                 }
             }
 
@@ -178,6 +187,7 @@ class CodeGenerator
                 let persLetter = persName[0];
 
                 // --- just a name of animation ---
+                /*
                 let obj = {
                     prefix      : `${animPrefix}`,
                     description : `${mapAnimNameToPerses[animName].join(",")} anim : ${animName}`,
@@ -189,6 +199,7 @@ class CodeGenerator
                     mapCache[obj.prefix] = true;
                     jsonResult[obj.description] = obj;
                 }
+                */
 
                 // --- IDLE : ii ---
                 if ( CodeGenerator._isIdle[animName] )
@@ -221,6 +232,7 @@ class CodeGenerator
                     }
 
                     // --- ANIM : ww (+ wait_seconds) ---
+                    /*
                     obj = {
                         prefix      : `ww${persLetter}${animPrefix}`,
                         description : `play_model_animation + wait_seconds '${persName}' : '${animName}'`,
@@ -232,6 +244,7 @@ class CodeGenerator
                         mapCache[obj.prefix] = true;
                         jsonResult[obj.description] = obj;
                     }
+                    */
                 }
             }
         }
