@@ -30,6 +30,8 @@ function start()
     UI.configureUI();
     gotoStep1();
 
+    // btnStep1Load_click(); // TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     //OHGameData = require("oh_gamedata"); // TODO: remove modules, work with simple *.js
     //OHGameData.init(OHGameData_initCompleted);
 }
@@ -179,6 +181,7 @@ function gotoStep2()
     UI.initStatus("Шаг 2. Выбор дня");
 
     refreshAvailableDays();
+    btnLocalReuseRefreshCombobox_click(); // refresh localization-reuse comboboxes
 }
 
 

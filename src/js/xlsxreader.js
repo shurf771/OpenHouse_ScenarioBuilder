@@ -252,4 +252,147 @@ class XLSXReader
         return obj;
     }
 
+
+
+    // ------------------------------------------------------------------------------
+    //     Localization Reuse
+    // ------------------------------------------------------------------------------
+
+
+    static reuseLocalizationStart()
+    {
+        let strTarget = $("#localReuseSheetTarget").val();
+        let strSource = $("#localReuseSheetSource").val();
+        let iId = parseInt($("#txtLocalReuseColumnID").val().trim());
+        let iRu = parseInt($("#txtLocalReuseColumnRu").val().trim());
+        let iLangsArr = [...$("#txtLocalReuseColumnOthers").val().trim().match(/\d+/g)||[]];
+        iLangsArr = iLangsArr.map(s => parseInt(s));
+    
+        let colMin = iRu;
+        let colMax = iRu;
+        let mapColumnImportant = { [iRu] : true };
+        for (let i=0; i<iLangsArr.length; i++) {
+            const eachLangId = iLangsArr[i];
+            colMin = Math.min(colMin, eachLangId);
+            colMax = Math.max(colMax, eachLangId);
+            mapColumnImportant[eachLangId] = true;
+        }
+    
+        console.log("find localization reuse parameters: ", strTarget, strSource, iId, iRu, iLangsArr);
+    
+        let sheetTarget = state.m3localization.Sheets[strTarget];
+        let sheetSource = state.m3localization.Sheets[strSource];
+    
+        if (!sheetTarget || !sheetSource) {
+            console.error("Must select source and dest sheets!");
+            return;
+        }
+    
+        let jsonTarget = XLSX.utils.sheet_to_json( sheetTarget, {"header": 1} ); // https://docs.sheetjs.com/docs/api/utilities/
+        let jsonSource = XLSX.utils.sheet_to_json( sheetSource, {"header": 1} ); // !!!!!!!!!!!!
+    
+        let mapSourceByRu = {};
+        for (let i=0; i<jsonSource.length; i++) {
+            const row = jsonSource[i];
+            const ru = row[iRu];
+            if (ru && ru.length > 0) {
+                mapSourceByRu[ ru.trim() ] = row;
+            }
+        }
+        console.log(jsonSource);
+        console.log(mapSourceByRu);
+    
+        let resultLines = [];
+    
+        let idFirstFrom = null;
+        let idFirstTo = null;
+        let blockLines = [];
+
+        state.reuseLocBlocks = [];
+
+        let domTable = $("#localReuseResultsTable").empty();
+    
+        for (let i=0; i<jsonTarget.length; i++) {
+            const row = jsonTarget[i];
+            let ru = row[iRu];
+            let badLine = true;
+
+            if (ru && ru.length > 0) {
+                ru = ru.trim();
+                const rowSource = mapSourceByRu[ru];
+                if (rowSource) {
+                    let isEqual = true;
+                    for (let iLang of iLangsArr) {
+                        if (rowSource[iLang] != row[iLang]) {
+                            isEqual = false;
+                            break;
+                        }
+                    }
+                    if (!isEqual) {
+                        let resLine = [];
+                        for (let c=colMin; c<=colMax; c++) {
+                            resLine.push( mapColumnImportant[c] ? rowSource[c]  : "" );
+                        }
+                        blockLines.push( resLine.join("\t") );
+                        if (!idFirstTo) {
+                            idFirstTo = row[iId];
+                            idFirstFrom = rowSource[iId];
+                        }
+                        badLine = false;
+                    }
+                }
+            }
+
+            if (blockLines.length > 0 && (badLine || i == jsonTarget.length-1))
+            {
+                let nLines = blockLines.length;
+                let iBlock = state.reuseLocBlocks.length;
+                state.reuseLocBlocks.push( blockLines.join("\n") );
+
+                let domH2 = $("<h2>").text(`${idFirstFrom} → ${idFirstTo} `);
+                if (nLines > 1) {
+                    domH2.append( $("<b>").text("  +" + (nLines-1)) );
+                }
+                let domColRight = $("<div>").addClass("col-10");
+                for (let c=0; c<blockLines.length; c++) {
+                    $("<p>").text(blockLines[c].replaceAll("\t", "●")).appendTo(domColRight);
+                }
+                let domDivRow = $("<div>").addClass("row").append([
+                    $("<div>").addClass("col-2").append(
+                        $("<button>")
+                            .addClass("bg-green btn s")
+                            .attr("shu-reuse-block-i", iBlock)
+                            .text(nLines > 1 ? (`copy ${nLines}`) : "copy")
+                            .on("click", XLSXReader.onReuseLocButtonBlock_clicked )
+                    ),
+                    domColRight
+                ]);
+                domTable.append([ domH2, domDivRow ]);
+
+                resultLines.push(idFirstTo + (nLines > 1 ? ("  +" + (nLines-1)) : ""));
+                blockLines.push("\n");
+                blockLines.push("\n");
+                resultLines = resultLines.concat(blockLines);
+
+                blockLines = [];
+                idFirstTo = null;
+                idFirstFrom = null;
+            }
+        }
+    
+        $("#txtLocalReuseResult").val( resultLines.join("\n") );
+        $("#localReuseResultDiv").show();
+    }
+
+
+    static onReuseLocButtonBlock_clicked(e) {
+        let btn = $(e.currentTarget);
+        let i = btn.attr("shu-reuse-block-i");
+        let s = state.reuseLocBlocks[i];
+        let clipboard = nw.Clipboard.get();
+        clipboard.set(s, 'text');
+        btn.removeClass("bg-green");
+        setTimeout(() => { btn.addClass("bg-green"); }, 125);
+    }
+
 }

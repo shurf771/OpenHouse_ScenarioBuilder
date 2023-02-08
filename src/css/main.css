@@ -179,6 +179,48 @@ h1 i {
 }
 
 /* --------------------------------------- */
+/*       reuse localization                */
+/* --------------------------------------- */
+
+#localReuseResultsTable {
+    display: flex;
+    height: 600px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-direction: column;
+    background: #ebf3f3;
+}
+
+#localReuseResultsTable h2 {
+    font-size: 1rem;
+    color: #3e6792;
+    text-align: left;
+    background: #d6eafb;
+    padding: 2px 10px;
+    margin: 0;
+}
+
+#localReuseResultsTable h2 b {
+    color: #dd160f;
+}
+
+#localReuseResultsTable div.row {
+    background: #e0e6e4;
+    margin-bottom: 10px; 
+}
+
+#localReuseResultsTable button {
+    margin-top: 5px; 
+}
+
+#localReuseResultsTable p {
+    font-size: 0.8rem;
+    text-align: left;
+    white-space: pre;
+    background: #fff4e6;
+}
+
+/* --------------------------------------- */
 /*       other UI                          */
 /* --------------------------------------- */
 

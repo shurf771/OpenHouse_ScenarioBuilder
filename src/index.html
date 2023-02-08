@@ -581,12 +581,15 @@
                             <button class="bg-teal btn" id="btnLocalReuseStart" shu-onclick="btnLocalReuseStart_click">Найти</button>
                         </div>
                     </div>
-                    <div class="row" id="localReuseResultDiv">
+                    <div class="row" style="display: none;" id="localReuseResultDiv">
                         <div class="col-12 center">
                             <br />
                             <textarea rows="10" class="full-width font-small" id="txtLocalReuseResult"></textarea>
                             <br />
                             <button class="bg-green btn workButton" shu-onclick="btnLocalReuseCopyClipboard_click">Скопировать в буфер</button>
+                            <br />
+                            <div id="localReuseResultsTable">
+                            </div>
                         </div>
                     </div>
                 </div>
