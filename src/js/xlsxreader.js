@@ -154,17 +154,26 @@ class XLSXReader
         };
 
         let currentQuest = null;
+        let beganEpisode = false;
+
         for (let index = READ_FROM_LINE; index < jsonLocalization.length; index++) {
             const row = jsonLocalization[index];
 
-            // check if it is the end of current episode
+            // check if it is the end of current episode OR start target episode
             const pattNewEpisode = /\s*start\.episode\.(\d+)\.name\s*/;
             if (row[4] && pattNewEpisode.test(row[4])) {
                 let newEpisode = parseInt(row[4].match(pattNewEpisode)[1]);
-                if (newEpisode > episode_id) {
+                if (newEpisode == episode_id) {
+                    // only now we begin to parse localization!
+                    beganEpisode = true;
+                }
+                else if (newEpisode > episode_id) {
                     // new episode began in localization sheet -> don't parse further
                     break;
                 }
+            }
+            if (!beganEpisode) {
+                continue;
             }
 
             // check if 1st column empty (error)
