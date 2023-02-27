@@ -20,7 +20,9 @@ function getCharOccurrencesCount(text, char) {
 
 // googleDoc names into day.json valid names
 function nameAlias(name) {
-    if (name == "oscar") return "main";
+    if (name == "oscar" && UIDefaults.data["rename.oscar"].value) 
+        return "main";
+
     if (name == "alice") return "ellie";
     if (name == "balto") return "dog";
     if (name == "francesca") return "sarah";

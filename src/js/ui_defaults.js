@@ -167,6 +167,11 @@ class UIDefaults
                 "descr": "Не генерировать 'Маст-А'",
                 "type": "bool",
                 "textValue": "0"
+            },
+            "rename.oscar" : {
+                "descr": "Заменять везде 'oscar' на 'main'",
+                "type": "bool",
+                "textValue": "1"
             }
         };
 
