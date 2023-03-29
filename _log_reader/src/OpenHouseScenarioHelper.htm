@@ -461,7 +461,7 @@
       'camera': [ "Camera move/zoom" ],
       'position': [ "Position", "Walk" ],
       'set_idle_animation': [ "set_idle_animation" ],
-      'look': [ "Look" ],
+      'look': [ "Look", "Look animated" ],
       'map_object': [ null, "Click map_object" ],
       'iso': [ "ISO modification", "ISO coordinates" ],
       'map_object_move': [ "Move visuals", "Visual coordinates" ],
@@ -470,6 +470,7 @@
       'error': [ "Errors" ],
       'copy_level_json': [ "Level JSON", "Level JSON" ],
       'move_widgets': [ "[move_widgets]" ],
+      'click_decor': [ "Click decor", "" ],
     };
 
     var RESULTS = {};
@@ -523,7 +524,8 @@
         prePattern: "[lua] LOOK",
         pattern: /^.*D:\[lua\] LOOK (\w+) at (\w+)$/,
         replace: [ 
-          '{ "action": "look", "personage": "$1", "at": "$2", "animate": false }'
+          '{ "action": "look", "personage": "$1", "at": "$2", "animate": false }',
+          '{ "action": "look", "personage": "$1", "at": "$2", "animate": true, "speed": 1.3 }'
         ]
       },
       "map_object:on_click": {
@@ -599,6 +601,18 @@
         replace: [ 
           'ERROR in "walk" for $1', 
           '"x":$2, "y":$3' 
+        ]
+      },
+      "click_decor": {
+        order: 150,
+        key: "click_decor_$1",
+        key_extended: "click_decor_$1_$2_$3",
+        group: 'click_decor',
+        prePattern: "=== DECOR CLICK ===",
+        pattern: /^.+=== DECOR CLICK === 	([\w\-]+)\s([\d\-\.]+)\s([\d\-\.]+).*$/,
+        replace: [
+          '$1',
+          '{"x": $2, "y": $3}'
         ]
       },
       "copy_level_json": {
