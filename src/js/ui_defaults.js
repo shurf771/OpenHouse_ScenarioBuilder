@@ -34,6 +34,12 @@ class UIDefaults
                 "type": "position",
                 "textValue": "0, 0"
             },
+            "position.joe" : {
+                "order": 45,
+                "descr": "Дефолтная позиция joe",
+                "type": "position",
+                "textValue": "0, 0"
+            },
             "position.tony" : {
                 "order": 50,
                 "descr": "Дефолтная позиция tony",
@@ -76,6 +82,12 @@ class UIDefaults
             },
             "talk.animation.ellie" : {
                 "descr": "Анимация-заглушка в баблах (talk) для ellie",
+                "type": "string",
+                "textValue": "idea",
+                "tabIndent": 1
+            },
+            "talk.animation.joe" : {
+                "descr": "Анимация-заглушка в баблах (talk) для joe",
                 "type": "string",
                 "textValue": "idea",
                 "tabIndent": 1
@@ -123,6 +135,12 @@ class UIDefaults
             },
             "comics.animation.ellie" : {
                 "descr": "Анимация 'через talk' в комиксы для ellie",
+                "type": "string",
+                "textValue": "idea",
+                "tabIndent": 1
+            },
+            "comics.animation.joe" : {
+                "descr": "Анимация 'через talk' в комиксы для joe",
                 "type": "string",
                 "textValue": "idea",
                 "tabIndent": 1

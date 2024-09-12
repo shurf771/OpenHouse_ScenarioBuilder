@@ -10,6 +10,7 @@ const COMICS_ICON =
     "main"    : "Emotions_MainChar/Emotions_MineChar_Default",
     "sarah"   : "Emotions_Mechanic/Emotions_Mechanic_Default",
     "jimmy"   : "Emotions_Jimmy/Emotions_Jimmy_Default",
+    "joe"     : "Emotions_Joe/Emotions_Joe_Default",
     "ellie"   : "Emotions_Elly/Emotions_Mechanic_Ellie_Default",
     "charles" : "Emotions_Charles/Emotions_Charles_Default",
     "tony"    : "Emotions_Tony/Emotions_Tony_Default"
@@ -21,6 +22,7 @@ const TALK_AND_IDLES_ANIMATIONS =
     "sarah"   : { idles: ["idle", "idle_bench", "sit_listen"], talks: ["talk", "sit_talk"] },
     "jimmy"   : { idles: ["idle", "sit_idle"],                 talks: ["talk", "talk_sit"] },
     "ellie"   : { idles: ["idle", "idle_bench", "Sit_Listen"], talks: ["talk", "Sit_Talk"] },
+    "joe"     : { idles: ["idle", "idle_bench", "Sit_Listen"], talks: ["talk", "Sit_Talk"] },
     "tony"    : { idles: ["idle"],                             talks: ["talk"] },
     "charles" : { idles: [], talks: [] },
 };
@@ -373,6 +375,16 @@ class JSONGenerator
                         "__!scenario!__"   : "quest." + quest.id + ".completed",
                         "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: false, [otherCoParentsIds[1]]: false, [otherCoParentsIds[2]]: true }), 1)
                     });
+                }
+            }
+            else if (otherCoParentsIds.length == 4) {
+                strAddIdles += replaces(TPL_START_SCENARIO_OR_IDLE, {
+                    "__!action!__"     : "start_scenario",
+                    "__!scenario!__"   : "quest." + strSceneAfterId,
+                    "__!conditions!__" : tabs(JSONGenerator._generateConditions({ [otherCoParentsIds[0]]: true, [otherCoParentsIds[1]]: true, [otherCoParentsIds[2]]: true, [otherCoParentsIds[3]]: true }), 1)
+                });
+                if (!noMastA) {
+                    // TODO: idle for 4-paralleled-quest
                 }
             }
             else {

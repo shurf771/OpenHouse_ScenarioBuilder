@@ -34,6 +34,12 @@ class UIDefaults
                 "type": "position",
                 "textValue": "0, 0"
             },
+            "position.joe" : {
+                "order": 50,
+                "descr": "Дефолтная позиция joe",
+                "type": "position",
+                "textValue": "0, 0"
+            },
             "talk.animations" : {
                 "descr": "Вставлять анимации-заглушки в баблы (talk)",
                 "type": "bool",
@@ -81,6 +87,11 @@ class UIDefaults
             },
             "comics.animation.ellie" : {
                 "descr": "Анимация 'через talk' в комиксы для ellie",
+                "type": "string",
+                "textValue": "idea"
+            },
+            "comics.animation.joe" : {
+                "descr": "Анимация 'через talk' в комиксы для joe",
                 "type": "string",
                 "textValue": "idea"
             }

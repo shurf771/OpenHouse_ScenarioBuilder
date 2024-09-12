@@ -541,7 +541,7 @@
         key: "iso:change",
         group: 'iso',
         prePattern: "ISO CHANGE",
-        pattern: /^.*D:\[lua\] ISO CHANGE\s*"([^"]+)"\s*"coord":\s{"w":\s([-.\d]+),\s?"h":\s([-.\d]+),\s?"x":\s([-.\d]+),\s?"y":\s([-.\d]+)}$/,
+        pattern: /^.*D:\[lua\] ISO CHANGE\s*"([^"]+)"\s*"coord":\s{"w":\s([-.\d]+),\s?"l":\s([-.\d]+),\s?"x":\s([-.\d]+),\s?"y":\s([-.\d]+),\s?"z":\s([-.\d]+)}$/,
         replace: [ 
           '$1',
           '{"w": $2, "l": $3, "x": $4, "y": $5}'
